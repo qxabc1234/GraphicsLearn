@@ -15,25 +15,36 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="a.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\Trouger\Downloads\glad (2)\src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c.cpp">
+    <ClCompile Include="Project1\a.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pixeldye.cpp">
+    <ClCompile Include="Project1\c.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Project1\pixeldye.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader_s.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="pixeldye.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Project1\pixeldye.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Project1\shader_s.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Project1\4.1.texture.fs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Project1\4.1.texture.vs">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

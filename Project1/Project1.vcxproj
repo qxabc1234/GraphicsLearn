@@ -133,14 +133,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="a.cpp" />
-    <ClCompile Include="c.cpp" />
     <ClCompile Include="C:\Users\Trouger\Downloads\glad (2)\src\glad.c" />
-    <ClCompile Include="pixeldye.cpp" />
+    <ClCompile Include="Project1\a.cpp" />
+    <ClCompile Include="Project1\c.cpp" />
+    <ClCompile Include="Project1\pixeldye.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pixeldye.h" />
-    <ClInclude Include="shader_s.h" />
+    <ClInclude Include="Project1\pixeldye.h" />
+    <ClInclude Include="Project1\shader_s.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Project1\4.1.texture.fs" />
+    <None Include="Project1\4.1.texture.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
