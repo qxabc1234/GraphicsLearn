@@ -1,4 +1,3 @@
-*.vcxproj.*
-*.vcxproj
 /debug/
 /x64/
+/.vs/
