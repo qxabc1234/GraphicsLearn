@@ -133,9 +133,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="C:\Users\Trouger\Downloads\glad (2)\src\glad.c" />
     <ClCompile Include="Project1\a.cpp" />
     <ClCompile Include="Project1\c.cpp" />
+    <ClCompile Include="Project1\glad.c" />
     <ClCompile Include="Project1\pixeldye.cpp" />
   </ItemGroup>
   <ItemGroup>
