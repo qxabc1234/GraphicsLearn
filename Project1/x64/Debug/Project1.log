@@ -1,7 +1,0 @@
-﻿  a.cpp
-c1xx : fatal  error C1083: Cannot open source file: 'a.cpp': No such file or directory
-  c.cpp
-c1xx : fatal  error C1083: Cannot open source file: 'c.cpp': No such file or directory
-  pixeldye.cpp
-c1xx : fatal  error C1083: Cannot open source file: 'pixeldye.cpp': No such file or directory
-  Generating Code...
