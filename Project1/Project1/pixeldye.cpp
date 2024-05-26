@@ -2,14 +2,20 @@
 
 
 
-void scan(glm::vec3 verticesn[], int size, unsigned char* data) {
+
+void scan(Vector4 verticesn[3], int size, unsigned char* data) {
     int Max_Y = 0;
     int Min_Y = (int)SCR_HEIGHT;
+
+    int vertices[3][2] = { {int(verticesn[0].x+0.5),int(verticesn[0].y + 0.5)},
+        {int(verticesn[1].x + 0.5),int(verticesn[1].y + 0.5)},
+        {int(verticesn[2].x + 0.5),int(verticesn[2].y + 0.5)}};
+    
     for (int i = 0; i < size; i++) {
-        if (verticesn[i].y > Max_Y)
-            Max_Y = verticesn[i].y;
-        if (verticesn[i].y < Min_Y)
-            Min_Y = verticesn[i].y;
+        if (vertices[i][1] > Max_Y)
+            Max_Y = vertices[i][1];
+        if (vertices[i][1] < Min_Y)
+            Min_Y = vertices[i][1];
     }
 
     AET* pAET = new AET;
@@ -24,25 +30,25 @@ void scan(glm::vec3 verticesn[], int size, unsigned char* data) {
     for (int i = Min_Y; i <= Max_Y; i++) {
         for (int j = 0; j < size; j++) {
 
-            if (i == verticesn[j].y) {
-                if (verticesn[(j - 1 + size) % size].y > verticesn[j].y)
+            if (i == vertices[j][1]) {
+                if (vertices[(j - 1 + size) % size][1] > vertices[j][1])
                 {
                     NET* p = new NET;
-                    p->x = verticesn[j].x;
-                    p->ymax = verticesn[(j - 1 + size) % size].y;
-                    float DX = verticesn[(j - 1 + size) % size].x - verticesn[j].x;
-                    float DY = verticesn[(j - 1 + size) % size].y - verticesn[j].y;
+                    p->x = vertices[j][0];
+                    p->ymax = vertices[(j - 1 + size) % size][1];
+                    float DX = vertices[(j - 1 + size) % size][0] - vertices[j][0];
+                    float DY = vertices[(j - 1 + size) % size][1] - vertices[j][1];
                     p->dx = DX / DY;
                     p->next = pNET[i]->next;
                     pNET[i]->next = p;
                 }
-                if (verticesn[(j + 1 + size) % size].y > verticesn[j].y)
+                if (vertices[(j + 1 + size) % size][1] > vertices[j][1])
                 {
                     NET* p = new NET;
-                    p->x = verticesn[j].x;
-                    p->ymax = verticesn[(j + 1 + size) % size].y;
-                    float DX = verticesn[(j + 1 + size) % size].x - verticesn[j].x;
-                    float DY = verticesn[(j + 1 + size) % size].y - verticesn[j].y;
+                    p->x = vertices[j][0];
+                    p->ymax = vertices[(j + 1 + size) % size][1];
+                    float DX = vertices[(j + 1 + size) % size][0] - vertices[j][0];
+                    float DY = vertices[(j + 1 + size) % size][1] - vertices[j][1];
                     p->dx = DX / DY;
                     p->next = pNET[i]->next;
                     pNET[i]->next = p;
@@ -64,7 +70,7 @@ void scan(glm::vec3 verticesn[], int size, unsigned char* data) {
         NET* ap = pNET[i]->next;
  
         while (ap) {
-            while (tq->next != NULL && tq->next->x <= ap->x) 
+            while (tq->next != NULL && (tq->next->x + tq->next->dx )<= (ap->x +ap->dx))
                 tq = tq->next;
             NET* t = ap->next;
             ap->next = tq->next;

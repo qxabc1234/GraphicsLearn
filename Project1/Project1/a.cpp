@@ -5,6 +5,8 @@
 #include "pixeldye.h"
 
 #include <iostream>
+#include "../Vector4.h"
+#include "../Matrix.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -42,10 +44,10 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-    glm::vec3 vertices[] = {
-    glm::vec3(-0.5f, -0.5f, 0.0f),
-     glm::vec3(0.5f, -0.5f, 0.0f),
-     glm::vec3(0.0f,  0.5f, 0.0f)
+    Vector4 vertices[] = {
+    Vector4(-0.5f, -0.5f, 0.0f, 1.0f),
+    Vector4(0.5f, -0.2f, 0.0f, 1.0f),
+    Vector4(0.0f,  0.5f, 0.0f, 1.0f)
     };
 
     unsigned int texture1;
@@ -63,37 +65,41 @@ int main()
     // render loop
     // -----------
 
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    Vector4 cameraPos (0.0f, 0.0f, 3.0f, 1.0f);
+    Vector4 cameraTarget(0.0f, 0.0f, 0.0f, .0f);
+    Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+    Matrix model = Matrix::Scale(1.0f, 1.0f, 1.0f);
+    Matrix view = Matrix::View(cameraPos, cameraTarget, up);
+    Matrix proj = Matrix::Persp(45.0f, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
-
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view;
-    view = glm::lookAt(cameraPos,
-        cameraTarget,
-        up);
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glm::vec4 vec1 = proj * view * model * glm::vec4(vertices[0], 1.0);
-    glm::vec4 nvec1 = vec1/vec1.w;
-    glm::vec4 vec2 = proj * view * model * glm::vec4(vertices[1], 1.0);
-    glm::vec4 nvec2 = vec2/vec2.w;
-    glm::vec4 vec3 = proj * view * model * glm::vec4(vertices[2], 1.0);
-    glm::vec4 nvec3 = vec3/vec3.w;
-
-    float a = (SCR_WIDTH - 1.0) / 2.0;
-    float b = (SCR_HEIGHT - 1.0) / 2.0;
-    glm::vec3 verticesn[] = {
-          glm::vec3((int)(nvec1.x * a + a), (int)(nvec1.y * b + b), 0.0f),
-          glm::vec3((int)(nvec2.x * a + a), (int)(nvec2.y * b + b), 0.0f),
-          glm::vec3((int)(nvec3.x * a + a),  (int)(nvec3.y * b + b), 0.0f)
+    Vector4 verticesPersp[] = {
+         proj* (view* (model * vertices[0])),
+         proj* (view* (model * vertices[1])),
+         proj* (view* (model * vertices[2]))
     };
 
-    scan(verticesn,  3,  data);
+
+    Vector4 verticesClip[] = {
+     verticesPersp[0]/ verticesPersp[0].w,
+     verticesPersp[1]/ verticesPersp[1].w,
+     verticesPersp[2]/ verticesPersp[2].w
+    };
+
+
+    float a = (SCR_WIDTH) / 2.0;
+    float b = (SCR_HEIGHT) / 2.0;
+    Matrix scale = Matrix::Scale(a, b, 1.0f);
+    Matrix trans = Matrix::Translate(a, b, 0.0f);
+
+    Vector4 verticesResult[] = {
+         trans* (scale* verticesClip[0]),
+         trans* (scale* verticesClip[1]),
+         trans* (scale* verticesClip[2])
+    };
+
+
+    scan(verticesResult,  3,  data);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

@@ -4,6 +4,7 @@
 #include<stack>
 #include<queue>
 #include <glm/glm.hpp>
+#include "../Vector4.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -17,5 +18,5 @@ typedef struct XET
 	XET* next;
 }AET,NET;
 
-void scan(glm::vec3 verticesn[], int size, unsigned char* data);
+void scan(Vector4 verticesn[3], int size, unsigned char* data);
 
