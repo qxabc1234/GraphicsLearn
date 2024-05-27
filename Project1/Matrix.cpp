@@ -31,7 +31,9 @@ Matrix Matrix::Rotate(float degree, float x, float y, float z)
 {
 
 	Matrix unitMat = Matrix::Translate(0.0f, 0.0f, 0.0f);
-	Matrix k({ 0.0f, -z, y, 0.0f }, { z, 0.0f, x, 0.0f }, { -y, x, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 1.0f });
+	Vector4 v{ x, y, z, 0.0f };
+	v.Normalize();
+	Matrix k({ 0.0f, -v.z, v.y, 0.0f }, { v.z, 0.0f, v.x, 0.0f }, { -v.y, v.x, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f });
 	Matrix squreK = k * k;
 	Matrix ksin = k * sin(degree);
 	Matrix kcos = squreK * (1.0 - cos(degree));

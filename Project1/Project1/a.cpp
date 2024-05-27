@@ -7,6 +7,7 @@
 #include <iostream>
 #include "../Vector4.h"
 #include "../Matrix.h"
+#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -44,10 +45,12 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+
     Vector4 vertices[] = {
     Vector4(-0.5f, -0.5f, 0.0f, 1.0f),
-    Vector4(0.5f, -0.2f, 0.0f, 1.0f),
-    Vector4(0.0f,  0.5f, 0.0f, 1.0f)
+    Vector4(0.5f, -0.5f, 0.0f, 1.0f),
+    Vector4(0.0f, 0.5f, 0.0f, 1.0f)
     };
 
     unsigned int texture1;
@@ -65,41 +68,57 @@ int main()
     // render loop
     // -----------
 
+
+    //glm::mat4 model0 = glm::mat4(1.0f);
+    //glm::mat4 model1 = glm::rotate(model0, 90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    //glm::mat4 view1;
+    //view1 = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+    //    glm::vec3(0.0f, 0.0f, 0.0f),
+    //    glm::vec3(0.0f, 1.0f, 0.0f));
+    
+   // glm::mat4 proj0 = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
     Vector4 cameraPos (0.0f, 0.0f, 3.0f, 1.0f);
-    Vector4 cameraTarget(0.0f, 0.0f, 0.0f, .0f);
+    Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 0.0f);
     Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
-    Matrix model = Matrix::Scale(1.0f, 1.0f, 1.0f);
+    Matrix model = Matrix::Rotate(0.0f, 0.0f, 0.0f, 1.0f);
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
     Matrix proj = Matrix::Persp(45.0f, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
-    Vector4 verticesPersp[] = {
-         proj* (view* (model * vertices[0])),
-         proj* (view* (model * vertices[1])),
-         proj* (view* (model * vertices[2]))
-    };
+    int size = sizeof(vertices) / sizeof(vertices[0]);
+    Vector4 *verticesPersp = new Vector4[size];
 
+    for (int i = 0; i < sizeof(vertices)/sizeof(vertices[0]); i++) {
+        verticesPersp[i] = proj * (view * (model * vertices[i]));
+    }
 
-    Vector4 verticesClip[] = {
-     verticesPersp[0]/ verticesPersp[0].w,
-     verticesPersp[1]/ verticesPersp[1].w,
-     verticesPersp[2]/ verticesPersp[2].w
-    };
-
+    Vector4* verticesClip = new Vector4[size];;
+    for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+        verticesClip[i] = verticesPersp[i] / verticesPersp[i].w;
+    }
 
     float a = (SCR_WIDTH) / 2.0;
     float b = (SCR_HEIGHT) / 2.0;
     Matrix scale = Matrix::Scale(a, b, 1.0f);
     Matrix trans = Matrix::Translate(a, b, 0.0f);
 
-    Vector4 verticesResult[] = {
-         trans* (scale* verticesClip[0]),
-         trans* (scale* verticesClip[1]),
-         trans* (scale* verticesClip[2])
+    Vector4* verticesResult = new Vector4[size];;
+    for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+        verticesResult[i] = trans* (scale * verticesClip[i]);
+    }
+
+    int width, height, nrChannels;
+    unsigned char* imagedata = stbi_load("image.jpg", &width, &height, &nrChannels, 0);
+
+    Vector4 verticesuv[] = {
+      Vector4(0.0f, 0.0f, 0.0f, 1.0f),
+      Vector4(1.0f, 0.0f, 0.0f, 1.0f),
+      Vector4(0.5f, 1.0f, 0.0f, 1.0f)
     };
 
-
-    scan(verticesResult,  3,  data);
+    scan(verticesResult,  size,  data, imagedata, verticesuv, width, height);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

@@ -18,5 +18,6 @@ typedef struct XET
 	XET* next;
 }AET,NET;
 
-void scan(Vector4 verticesn[3], int size, unsigned char* data);
+void scan(Vector4 verticesn[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height);
+std::vector<int> search(float u, float v, int width, int height, unsigned char* imagedata);
 
