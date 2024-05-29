@@ -7,6 +7,7 @@
 #include <iostream>
 #include "../Vector4.h"
 #include "../Matrix.h"
+#include "../model.h"
 #include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -46,6 +47,7 @@ int main()
         return -1;
     }
 
+    Model ourModel("./cube/cube.obj");
 
     Vector4 vertices[] = {
     Vector4(-0.5f, -0.5f, 0.0f, 1.0f),
@@ -57,11 +59,14 @@ int main()
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
     unsigned char* data = new unsigned char[3 * SCR_WIDTH * SCR_HEIGHT * sizeof(unsigned char)];
+    double* zbuffer = new double[SCR_WIDTH * SCR_HEIGHT * sizeof(double)];
+
     for (unsigned int i = 0; i < SCR_WIDTH * SCR_HEIGHT; i++)
     {
         data[i * 3] = (unsigned char)(0.0f);
         data[i * 3 + 1] = (unsigned char)(255.0f);
         data[i * 3 + 2] = (unsigned char)(0.0f);
+        zbuffer[ i ] = 1.0;
     }
 
 
@@ -79,52 +84,79 @@ int main()
     
    // glm::mat4 proj0 = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-    Vector4 cameraPos (0.0f, 0.0f, 3.0f, 1.0f);
-    Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 0.0f);
+    Vector4 cameraPos (2.0f, 0.3f, 2.0f, 1.0f);
+    Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 1.0f);
     Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
+    Vector4 front(0.0f, 0.0f, -1.0f, 0.0f);
+
+    bool firstMouse = true;
+    float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+    float pitch = 0.0f;
+    float lastX = 800.0f / 2.0;
+    float lastY = 600.0 / 2.0;
+    float fov = 45.0f;
+
+    float deltaTime = 0.0f;	// time between current frame and last frame
+    float lastFrame = 0.0f;
 
     Matrix model = Matrix::Rotate(0.0f, 0.0f, 1.0f, 0.0f);
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
-    Matrix proj = Matrix::Persp(45.0f, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
-
-    int size = sizeof(vertices) / sizeof(vertices[0]);
-    Vector4* verticesView = new Vector4[size];
-
-    Vector4 * verticesClip = new Vector4[size];
-
-    for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-        verticesView[i] = view * (model * vertices[i]);
-    }
-
-    for (int i = 0; i < sizeof(vertices)/sizeof(vertices[0]); i++) {
-        verticesClip[i] = proj * verticesView[i];
-    }
-
-    Vector4* verticesNDC = new Vector4[size];;
-    for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-        verticesNDC[i] = verticesClip[i] / verticesClip[i].w;
-    }
+    Matrix proj = Matrix::Persp(fov, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
     float a = (SCR_WIDTH) / 2.0;
     float b = (SCR_HEIGHT) / 2.0;
+
     Matrix scale = Matrix::Scale(a, b, 1.0f);
     Matrix trans = Matrix::Translate(a, b, 0.0f);
 
-    Vector4* verticesResult = new Vector4[size];;
-    for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-        verticesResult[i] = trans* (scale * verticesNDC[i]);
-    }
-
     int width, height, nrChannels;
-    unsigned char* imagedata = stbi_load("image.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* imagedata = stbi_load("./cube/default.png", &width, &height, &nrChannels, 0);
 
-    Vector4 verticesuv[] = {
-      Vector4(0.0f, 0.0f, 0.0f, 1.0f),
-      Vector4(1.0f, 0.0f, 0.0f, 1.0f),
-      Vector4(0.5f, 1.0f, 0.0f, 1.0f)
-    };
 
-    scan(verticesResult, verticesClip, size,  data, imagedata, verticesuv, width, height);
+    int size = ourModel.meshes[0].indices.size();
+
+    for (int i = 0; i < size / 3; i++) {
+
+        int index = i * 3;
+        Vector4 vertices[] = {
+         Vector4(ourModel.meshes[0].vertices[index].Position.x, ourModel.meshes[0].vertices[index].Position.y, ourModel.meshes[0].vertices[index].Position.z, 1.0f),
+         Vector4(ourModel.meshes[0].vertices[index + 1].Position.x, ourModel.meshes[0].vertices[index + 1].Position.y, ourModel.meshes[0].vertices[index + 1].Position.z, 1.0f),
+         Vector4(ourModel.meshes[0].vertices[index + 2].Position.x, ourModel.meshes[0].vertices[index + 2].Position.y, ourModel.meshes[0].vertices[index + 2].Position.z, 1.0f)
+        };
+
+        Vector4 verticesuv[] = {
+          Vector4(ourModel.meshes[0].vertices[index].TexCoords.x, ourModel.meshes[0].vertices[index].TexCoords.y, 0.0f, 1.0f),
+          Vector4(ourModel.meshes[0].vertices[index + 1].TexCoords.x, ourModel.meshes[0].vertices[index + 1].TexCoords.y, 0.0f, 1.0f),
+          Vector4(ourModel.meshes[0].vertices[index + 2].TexCoords.x, ourModel.meshes[0].vertices[index + 2].TexCoords.y, 0.0f, 1.0f)
+        };
+
+
+
+        Vector4 verticesView[3];
+        Vector4 verticesClip[3];
+        Vector4 verticesNDC[3];
+        Vector4 verticesResult[3];
+
+        for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+            verticesView[i] = view * (model * vertices[i]);
+        }
+
+        for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+            verticesClip[i] = proj * verticesView[i];
+        }
+
+        for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+            verticesNDC[i] = verticesClip[i] / verticesClip[i].w;
+        }
+
+        for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+            verticesResult[i] = trans * (scale * verticesNDC[i]);
+        }
+
+
+        scan(verticesResult, verticesClip, 3, data, imagedata, verticesuv, width, height, zbuffer);
+
+    }
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -164,6 +196,7 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

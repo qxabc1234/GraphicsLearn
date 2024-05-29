@@ -66,11 +66,10 @@ Matrix Matrix::Ortho(float l, float r, float t, float b, float n, float f)
 
 Matrix Matrix::Persp(float fov, float n, float f, float ratio)
 {
-	double top = tan(fov / 2) * n;
+	float top = tan(fov / 2) * n;
 	float right = top * ratio;
-	Matrix ortho = Matrix::Ortho(-right, right, top, -top, n, f);
-	Matrix persptoOrtho = { {-n, 0.0f, 0.0f, 0.0f}, {0.0f, -n, 0.0f, 0.0f}, {0.0f, 0.0f, -(n + f), -n * f}, {0.0f, 0.0f, 1.0f, 0.0f} };
-	return ortho * persptoOrtho;
+	Matrix persp = {{n/right, 0.0f, 0.0f, 0.0f}, {0.0f, n/top, 0.0f, 0.0f}, {0.0f, 0.0f, -(n + f)/(f - n), 2.0f * n * f/(n - f)}, {0.0f, 0.0f, -1.0f, 0.0f}};
+	return persp;
 }
 
 

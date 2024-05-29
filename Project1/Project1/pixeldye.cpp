@@ -3,27 +3,23 @@
 #include <vector>
 
 
-void scan(Vector4 verticesn[], Vector4 verticesClip[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height) {
+void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, double* zbuffer) {
     int Max_Y = 0;
     int Min_Y = (int)SCR_HEIGHT;
-    float Min_Z_x = 0.0;
-    float Max_Z_x = SCR_WIDTH;
-    float Min_Z_y = 0.0;
-    float Max_Z_y = SCR_HEIGHT;
-    float Max_Z = 0.0;
-    float Min_Z = 1e6f;
+
     std::vector<std::vector<int>> vertices;
     std::vector <std::vector<float>> verticesz;
 
     for (int i = 0; i < size; i++) {
         std::vector<int> v;
-        v.push_back(int(verticesn[i].x + 0.5));
-        v.push_back(int(verticesn[i].y + 0.5));
+        v.push_back(int(verticeNDC[i].x + 0.5));
+        v.push_back(int(verticeNDC[i].y + 0.5));
         vertices.push_back(v);
         std::vector<float> v1;
         v1.push_back(verticeuv[i].x / verticesClip[i].w);
         v1.push_back(verticeuv[i].y / verticesClip[i].w);
         v1.push_back(1 / verticesClip[i].w);
+        v1.push_back(verticeNDC[i].z / verticesClip[i].w);
         verticesz.push_back(v1);
 
     }
@@ -142,12 +138,18 @@ void scan(Vector4 verticesn[], Vector4 verticesClip[], int size, unsigned char* 
                 double r3 = s3 / total;
                 double u = (r1 * verticesz[2][0] + r2 * verticesz[0][0] + r3 * verticesz[1][0]);
                 double v = (r1 * verticesz[2][1] + r2 * verticesz[0][1] + r3 * verticesz[1][1]);
-                double w = (r1 * verticesz[2][2] + r2 * verticesz[0][2] + r3 * verticesz[1][2]);
-                int t = (i * SCR_WIDTH + j) * 3;
-                std::vector<int> color = search(u/w, v/w, width, height, imagedata);
-                 data[t] = color[0];
-                data[t + 1] = color[1];
-                data[t + 2] = color[2];
+                double inversedW = (r1 * verticesz[2][2] + r2 * verticesz[0][2] + r3 * verticesz[1][2]);
+                double z = (r1 * verticesz[2][3] + r2 * verticesz[0][3] + r3 * verticesz[1][3]);
+                int index = i * SCR_WIDTH + j;
+                int t = index * 3;
+                if ( z / inversedW < zbuffer[index]) {
+                    std::vector<int> color = search(u / inversedW, v / inversedW, width, height, imagedata);
+                    data[t] = color[0];
+                    data[t + 1] = color[1];
+                    data[t + 2] = color[2];
+                    zbuffer[index] = z / inversedW;
+                }
+                
             }
             p = p->next->next;
         }

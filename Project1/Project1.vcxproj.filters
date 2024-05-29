@@ -41,13 +41,19 @@
     <ClInclude Include="Project1\pixeldye.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Project1\shader_s.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vector4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader_s.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
