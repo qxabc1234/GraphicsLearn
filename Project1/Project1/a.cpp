@@ -50,7 +50,7 @@ int main()
     Vector4 vertices[] = {
     Vector4(-0.5f, -0.5f, 0.0f, 1.0f),
     Vector4(0.5f, -0.5f, 0.0f, 1.0f),
-    Vector4(0.0f, 0.5f, 0.0f, 1.0f)
+    Vector4(0.0f, 0.5f, -5.0f, 1.0f)
     };
 
     unsigned int texture1;
@@ -83,20 +83,26 @@ int main()
     Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 0.0f);
     Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
-    Matrix model = Matrix::Rotate(0.0f, 0.0f, 0.0f, 1.0f);
+    Matrix model = Matrix::Rotate(0.0f, 0.0f, 1.0f, 0.0f);
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
     Matrix proj = Matrix::Persp(45.0f, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
     int size = sizeof(vertices) / sizeof(vertices[0]);
-    Vector4 *verticesPersp = new Vector4[size];
+    Vector4* verticesView = new Vector4[size];
 
-    for (int i = 0; i < sizeof(vertices)/sizeof(vertices[0]); i++) {
-        verticesPersp[i] = proj * (view * (model * vertices[i]));
+    Vector4 * verticesClip = new Vector4[size];
+
+    for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+        verticesView[i] = view * (model * vertices[i]);
     }
 
-    Vector4* verticesClip = new Vector4[size];;
+    for (int i = 0; i < sizeof(vertices)/sizeof(vertices[0]); i++) {
+        verticesClip[i] = proj * verticesView[i];
+    }
+
+    Vector4* verticesNDC = new Vector4[size];;
     for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-        verticesClip[i] = verticesPersp[i] / verticesPersp[i].w;
+        verticesNDC[i] = verticesClip[i] / verticesClip[i].w;
     }
 
     float a = (SCR_WIDTH) / 2.0;
@@ -106,7 +112,7 @@ int main()
 
     Vector4* verticesResult = new Vector4[size];;
     for (int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-        verticesResult[i] = trans* (scale * verticesClip[i]);
+        verticesResult[i] = trans* (scale * verticesNDC[i]);
     }
 
     int width, height, nrChannels;
@@ -118,7 +124,7 @@ int main()
       Vector4(0.5f, 1.0f, 0.0f, 1.0f)
     };
 
-    scan(verticesResult,  size,  data, imagedata, verticesuv, width, height);
+    scan(verticesResult, verticesClip, size,  data, imagedata, verticesuv, width, height);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

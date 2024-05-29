@@ -3,16 +3,29 @@
 #include <vector>
 
 
-void scan(Vector4 verticesn[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height) {
+void scan(Vector4 verticesn[], Vector4 verticesClip[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height) {
     int Max_Y = 0;
     int Min_Y = (int)SCR_HEIGHT;
+    float Min_Z_x = 0.0;
+    float Max_Z_x = SCR_WIDTH;
+    float Min_Z_y = 0.0;
+    float Max_Z_y = SCR_HEIGHT;
+    float Max_Z = 0.0;
+    float Min_Z = 1e6f;
     std::vector<std::vector<int>> vertices;
+    std::vector <std::vector<float>> verticesz;
 
     for (int i = 0; i < size; i++) {
         std::vector<int> v;
         v.push_back(int(verticesn[i].x + 0.5));
         v.push_back(int(verticesn[i].y + 0.5));
         vertices.push_back(v);
+        std::vector<float> v1;
+        v1.push_back(verticeuv[i].x / verticesClip[i].w);
+        v1.push_back(verticeuv[i].y / verticesClip[i].w);
+        v1.push_back(1 / verticesClip[i].w);
+        verticesz.push_back(v1);
+
     }
 
     for (int i = 0; i < size; i++) {
@@ -20,14 +33,10 @@ void scan(Vector4 verticesn[], int size, unsigned char* data, unsigned char* ima
             Max_Y = vertices[i][1];
         if (vertices[i][1] < Min_Y)
             Min_Y = vertices[i][1];
+            
     }
 
-    // u = x*dx + du
-    float dx = (verticeuv[1].x - verticeuv[0].x) / (vertices[1][0] - vertices[0][0]);
-    float du = -dx * vertices[0][0];
-    // v = y*dy +dv
-    float dy = (verticeuv[2].y - verticeuv[1].y) / (vertices[2][1] - vertices[1][1]);
-    float dv = -dy * vertices[1][1];
+
     AET* pAET = new AET;
     pAET->next = NULL;
 
@@ -121,10 +130,21 @@ void scan(Vector4 verticesn[], int size, unsigned char* data, unsigned char* ima
         p = pAET->next;
         while (p && p->next != NULL) {
             for (int j = p->x; j <= p->next->x; j++) {
-                float u = j * dx + du;
-                float v = i * dy + dv;
+                // p 0 1
+                double s1 = abs((j - vertices[1][0]) * (vertices[0][1] - vertices[1][1]) - (vertices[0][0] - vertices[1][0]) * (i - vertices[1][1]));
+                // p 1 2
+                double s2 = abs((j - vertices[2][0]) * (vertices[1][1] - vertices[2][1]) - (vertices[1][0] - vertices[2][0]) * (i - vertices[2][1]));
+                // p 0 2
+                double s3 = abs((j - vertices[2][0]) * (vertices[0][1] - vertices[2][1]) - (vertices[0][0] - vertices[2][0]) * (i - vertices[2][1]));
+                double total = s1 + s2 + s3;
+                double r1 = s1 / total;
+                double r2 = s2 / total;
+                double r3 = s3 / total;
+                double u = (r1 * verticesz[2][0] + r2 * verticesz[0][0] + r3 * verticesz[1][0]);
+                double v = (r1 * verticesz[2][1] + r2 * verticesz[0][1] + r3 * verticesz[1][1]);
+                double w = (r1 * verticesz[2][2] + r2 * verticesz[0][2] + r3 * verticesz[1][2]);
                 int t = (i * SCR_WIDTH + j) * 3;
-                std::vector<int> color = search(v, u, width, height, imagedata);
+                std::vector<int> color = search(u/w, v/w, width, height, imagedata);
                  data[t] = color[0];
                 data[t + 1] = color[1];
                 data[t + 2] = color[2];
@@ -149,10 +169,10 @@ std::vector<int> search(float u, float v, int width, int height, unsigned char* 
     float distance3 = std::sqrt((x - left) * (x - left) + (y - top) * (y - top));
     float distance4 = std::sqrt((x - right) * (x - right) + (y - top) * (y - top));
 
-    int leftbottom = (int(left) * width + int(bottom)) * 3;
-    int rightbottom = (int(right) * width + int(bottom)) * 3;
-    int lefttop = (int(left) * width + int(top)) * 3;
-    int righttop = (int(right) * width + int(top)) * 3;
+    int leftbottom = (int(bottom) * width + int(left)) * 3;
+    int rightbottom = (int(bottom) * width + int(right)) * 3;
+    int lefttop = (int(top) * width + int(left)) * 3;
+    int righttop = (int(top) * width + int(right)) * 3;
     float total = distance1 + distance2 + distance3 + distance4;
     
     int red = (distance1 * imagedata[leftbottom] + distance2 * imagedata[rightbottom] + distance3 * imagedata[lefttop] + distance4 * imagedata[righttop]) / total;
