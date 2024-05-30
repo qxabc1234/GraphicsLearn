@@ -70,12 +70,6 @@ int main()
 
     Model ourModel("./cube/cube.obj");
 
-    Vector4 vertices[] = {
-    Vector4(-0.5f, -0.5f, 0.0f, 1.0f),
-    Vector4(0.5f, -0.5f, 0.0f, 1.0f),
-    Vector4(0.0f, 0.5f, -5.0f, 1.0f)
-    };
-
     unsigned int texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
