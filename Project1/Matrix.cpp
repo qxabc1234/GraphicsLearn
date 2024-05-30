@@ -29,16 +29,16 @@ Matrix Matrix::Scale(float x, float y, float z)
 
 Matrix Matrix::Rotate(float degree, float x, float y, float z)
 {
-
-	Matrix unitMat = Matrix::Translate(0.0f, 0.0f, 0.0f);
 	Vector4 v{ x, y, z, 0.0f };
-	v.Normalize();
-	Matrix k({ 0.0f, -v.z, v.y, 0.0f }, { v.z, 0.0f, v.x, 0.0f }, { -v.y, v.x, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f });
-	Matrix squreK = k * k;
-	Matrix ksin = k * sin(degree);
-	Matrix kcos = squreK * (1.0 - cos(degree));
+	Vector4 unitV = v.Normalize();
+	float s = sin(degree);
+	float c = cos(degree);
+	Vector4 vcos = unitV * (1.0 - c);
 
-	Matrix  result = ksin + kcos + unitMat;
+	Matrix  result({ vcos.x * unitV.x + c, vcos.x * unitV.y + s * unitV.z, vcos.x * unitV.z - s * unitV.y, 0.0f },
+		           { vcos.y * unitV.x - s * unitV.z , c + vcos.y * unitV.y , vcos.y * unitV.z + s * unitV.x , 0.0f },
+		           { vcos.z * unitV.x + s * unitV.y , vcos.z * unitV.y - s * unitV.x, c + vcos.z * unitV.z, 0.0f },
+		           { 0.0f, 0.0f, 0.0f, 1.0f });
 
 	return result;
 }

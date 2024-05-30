@@ -8,7 +8,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
     int Min_Y = (int)SCR_HEIGHT;
 
     std::vector<std::vector<int>> vertices;
-    std::vector <std::vector<float>> verticesz;
+    std::vector <std::vector<float>> veticeDivideW;
 
     for (int i = 0; i < size; i++) {
         std::vector<int> v;
@@ -20,7 +20,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
         v1.push_back(verticeuv[i].y / verticesClip[i].w);
         v1.push_back(1 / verticesClip[i].w);
         v1.push_back(verticeNDC[i].z / verticesClip[i].w);
-        verticesz.push_back(v1);
+        veticeDivideW.push_back(v1);
 
     }
 
@@ -136,18 +136,19 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
                 double r1 = s1 / total;
                 double r2 = s2 / total;
                 double r3 = s3 / total;
-                double u = (r1 * verticesz[2][0] + r2 * verticesz[0][0] + r3 * verticesz[1][0]);
-                double v = (r1 * verticesz[2][1] + r2 * verticesz[0][1] + r3 * verticesz[1][1]);
-                double inversedW = (r1 * verticesz[2][2] + r2 * verticesz[0][2] + r3 * verticesz[1][2]);
-                double z = (r1 * verticesz[2][3] + r2 * verticesz[0][3] + r3 * verticesz[1][3]);
+                double u = (r1 * veticeDivideW[2][0] + r2 * veticeDivideW[0][0] + r3 * veticeDivideW[1][0]);
+                double v = (r1 * veticeDivideW[2][1] + r2 * veticeDivideW[0][1] + r3 * veticeDivideW[1][1]);
+                double inversedW = (r1 * veticeDivideW[2][2] + r2 * veticeDivideW[0][2] + r3 * veticeDivideW[1][2]);
+                double zDivideW = (r1 * veticeDivideW[2][3] + r2 * veticeDivideW[0][3] + r3 * veticeDivideW[1][3]);
+                double z = zDivideW / inversedW;
                 int index = i * SCR_WIDTH + j;
                 int t = index * 3;
-                if ( z / inversedW < zbuffer[index]) {
+                if ( z < zbuffer[index]) {
                     std::vector<int> color = search(u / inversedW, v / inversedW, width, height, imagedata);
                     data[t] = color[0];
                     data[t + 1] = color[1];
                     data[t + 2] = color[2];
-                    zbuffer[index] = z / inversedW;
+                    zbuffer[index] = z;
                 }
                 
             }
@@ -165,11 +166,15 @@ std::vector<int> search(float u, float v, int width, int height, unsigned char* 
     float bottom = top - 1.0;
     float right = int(x) + 0.5;
     float left = right - 1.0;
+    float xToLeft = x - left;
+    float xToRight = x - right;
+    float yToTop = y - top;
+    float yToBottom = y - bottom;
 
-    float distance1 = std::sqrt((x - left) * (x - left) + (y - bottom) * (y - bottom));
-    float distance2 = std::sqrt((x - right) * (x - right) + (y - bottom) * (y - bottom));
-    float distance3 = std::sqrt((x - left) * (x - left) + (y - top) * (y - top));
-    float distance4 = std::sqrt((x - right) * (x - right) + (y - top) * (y - top));
+    float distance1 = std::sqrt(xToLeft * xToLeft + yToBottom * yToBottom);
+    float distance2 = std::sqrt(xToRight * xToRight + yToBottom * yToBottom);
+    float distance3 = std::sqrt(xToLeft * xToLeft + yToTop * yToTop);
+    float distance4 = std::sqrt(xToRight * xToRight + yToTop * yToTop);
 
     int leftbottom = (int(bottom) * width + int(left)) * 3;
     int rightbottom = (int(bottom) * width + int(right)) * 3;
