@@ -139,7 +139,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Matrix.cpp" />
-    <ClCompile Include="Project1\a.cpp" />
+    <ClCompile Include="Project1\GraphicLearn.cpp" />
     <ClCompile Include="Project1\c.cpp" />
     <ClCompile Include="Project1\glad.c" />
     <ClCompile Include="Project1\pixeldye.cpp" />
