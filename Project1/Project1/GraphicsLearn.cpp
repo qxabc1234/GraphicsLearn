@@ -21,7 +21,8 @@ Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 1.0f);
 Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
 bool startPress = true;
-float angle = 0.0f;
+float anglex = 0.0f;
+float angley = 0.0f;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 float nowX = 800.0f / 2.0;
@@ -76,6 +77,7 @@ int main()
     unsigned char* data = new unsigned char[3 * SCR_WIDTH * SCR_HEIGHT * sizeof(unsigned char)];
     double* zbuffer = new double[SCR_WIDTH * SCR_HEIGHT * sizeof(double)];
 
+    Matrix preModel = Matrix::Scale(1.0f, 1.0f, 1.0f);
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
     Matrix proj = Matrix::Persp(fov, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
@@ -126,7 +128,8 @@ int main()
               Vector4(ourModel.meshes[0].vertices[index + 2].TexCoords.x, ourModel.meshes[0].vertices[index + 2].TexCoords.y, 0.0f, 1.0f)
             };
 
-        Matrix model = Matrix::Rotate(angle, axle.x, axle.y, axle.z);
+            Matrix model = Matrix::Rotate(angley, 0.0f, 1.0f, 0.0f) * Matrix::Rotate(anglex, 1.0f, 0.0f, 0.0f) * preModel;
+            preModel = model;
 
             Vector4 verticesView[3];
             Vector4 verticesClip[3];
@@ -200,14 +203,16 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     if (!startPress) {
    
         float xoffset = xpos - lastX;
-        float yoffset = lastY - ypos;
+        float yoffset = ypos - lastY;
         lastX = xpos;
         lastY = ypos;
 
-        axle.x = yoffset;
-        axle.y = xoffset;
-        float ratio = 0.05f;
-        angle = std::sqrt(xoffset * xoffset + yoffset * yoffset) * ratio;
+        //axle.x = yoffset;
+        //axle.y = xoffset;
+        float ratio = 0.001f;
+        anglex = std::sqrt(xoffset * xoffset) * ratio;
+        angley = std::sqrt(yoffset * yoffset) * ratio;
+
     
     }
 
@@ -231,6 +236,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
         if (!startPress) {
             startPress = true;
+            anglex = 0.0f;
+            angley = 0.0f;
         }
     }
 

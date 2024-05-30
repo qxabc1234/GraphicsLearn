@@ -18,6 +18,13 @@ typedef struct XET
 	XET* next;
 }AET,NET;
 
+struct Color32
+{
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+};
 void scan(Vector4 verticesn[], Vector4 verticesPersp[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, double* zbuffer);
-std::vector<int> search(float u, float v, int width, int height, unsigned char* imagedata);
+Color32 search(float u, float v, int width, int height, unsigned char* imagedata);
 

@@ -144,10 +144,10 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
                 int index = i * SCR_WIDTH + j;
                 int t = index * 3;
                 if ( z < zbuffer[index]) {
-                    std::vector<int> color = search(u / inversedW, v / inversedW, width, height, imagedata);
-                    data[t] = color[0];
-                    data[t + 1] = color[1];
-                    data[t + 2] = color[2];
+                    Color32 color = search(u / inversedW, v / inversedW, width, height, imagedata);
+                    data[t] = color.r;
+                    data[t + 1] = color.g;
+                    data[t + 2] = color.b;
                     zbuffer[index] = z;
                 }
                 
@@ -158,7 +158,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
 
 }
 
-std::vector<int> search(float u, float v, int width, int height, unsigned char* imagedata) {
+Color32 search(float u, float v, int width, int height, unsigned char* imagedata) {
     float x = u * width;
     float y = v * height;
 
@@ -182,15 +182,10 @@ std::vector<int> search(float u, float v, int width, int height, unsigned char* 
     int righttop = (int(top) * width + int(right)) * 3;
     float total = distance1 + distance2 + distance3 + distance4;
     
-    int red = (distance1 * imagedata[leftbottom] + distance2 * imagedata[rightbottom] + distance3 * imagedata[lefttop] + distance4 * imagedata[righttop]) / total;
-    int green = (distance1 * imagedata[leftbottom + 1] + distance2 * imagedata[rightbottom + 1] + distance3 * imagedata[lefttop + 1] + distance4 * imagedata[righttop + 1]) / total;
-    int blue = (distance1 * imagedata[leftbottom + 2] + distance2 * imagedata[rightbottom + 2] + distance3 * imagedata[lefttop + 2] + distance4 * imagedata[righttop + 2]) / total;
+    float red = (distance1 * imagedata[leftbottom] + distance2 * imagedata[rightbottom] + distance3 * imagedata[lefttop] + distance4 * imagedata[righttop]) / total;
+    float green = (distance1 * imagedata[leftbottom + 1] + distance2 * imagedata[rightbottom + 1] + distance3 * imagedata[lefttop + 1] + distance4 * imagedata[righttop + 1]) / total;
+    float blue = (distance1 * imagedata[leftbottom + 2] + distance2 * imagedata[rightbottom + 2] + distance3 * imagedata[lefttop + 2] + distance4 * imagedata[righttop + 2]) / total;
 
-    std::vector<int> color;
-    color.push_back(red);
-    color.push_back(green);
-    color.push_back(blue);
-
-    return color;
+    return {(unsigned char)red, (unsigned char)green, (unsigned char)blue, 0};
 }
 
