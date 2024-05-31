@@ -138,11 +138,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="stb.cpp" />
+    <ClCompile Include="glad.c" />
+    <ClCompile Include="GraphicsLearn.cpp" />
     <ClCompile Include="Matrix.cpp" />
-    <ClCompile Include="Project1\c.cpp" />
-    <ClCompile Include="Project1\glad.c" />
-    <ClCompile Include="Project1\GraphicsLearn.cpp" />
-    <ClCompile Include="Project1\pixeldye.cpp" />
+    <ClCompile Include="pixeldye.cpp" />
     <ClCompile Include="Vector4.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -150,16 +150,15 @@
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="pixeldye.h" />
-    <ClInclude Include="Project1\pixeldye.h" />
     <ClInclude Include="shader_s.h" />
     <ClInclude Include="Vector4.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Project1\4.1.texture.fs" />
-    <None Include="Project1\4.1.texture.vs" />
+    <Image Include="Project1\image.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Project1\image.jpg" />
+    <None Include="4.1.texture.fs" />
+    <None Include="4.1.texture.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

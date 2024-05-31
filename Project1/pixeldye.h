@@ -4,7 +4,7 @@
 #include<stack>
 #include<queue>
 #include <glm/glm.hpp>
-#include "../Vector4.h"
+#include "Vector4.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
