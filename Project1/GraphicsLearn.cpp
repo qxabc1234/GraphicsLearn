@@ -90,6 +90,9 @@ int main()
     int width, height, nrChannels;
     unsigned char* imagedata = stbi_load("./cube/default.png", &width, &height, &nrChannels, 0);
 
+    std::vector<Vector4> allVrticesResult;
+    std::vector<Vector4> allVerticesClip;
+    std::vector<Vector4> allVerticesUV;
 
     //render
     //render end
@@ -113,9 +116,6 @@ int main()
         }
         Matrix model = Matrix::Rotate(roll, 1.0f, 0.0f, 0.0f) * Matrix::Rotate(pitch, 0.0f, 1.0f, 0.0f);
 
-        std::vector<Vector4> allVrticesResult;
-        std::vector<Vector4> allVerticesClip;
-        std::vector<Vector4> allVerticesUV;
 
         for (int index = 0; index < ourModel.meshes[0].vertices.size(); index++) {
 
@@ -176,6 +176,10 @@ int main()
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        allVrticesResult.clear();
+        allVerticesClip.clear();
+        allVerticesUV.clear();
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
