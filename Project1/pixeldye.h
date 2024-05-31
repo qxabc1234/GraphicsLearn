@@ -25,6 +25,6 @@ struct Color32
 	unsigned char b;
 	unsigned char a;
 };
-void scan(Vector4 verticesn[], Vector4 verticesPersp[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, double* zbuffer);
+void scan(Vector4 verticesn[], Vector4 verticesPersp[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, float* zbuffer);
 Color32 search(float u, float v, int width, int height, unsigned char* imagedata);
 

@@ -69,13 +69,13 @@ int main()
         return -1;
     }
 
-    Model ourModel("./cube/cube.obj");
+    Model ourModel("./assets/sphere.obj");
 
     unsigned int texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
     unsigned char* data = new unsigned char[3 * SCR_WIDTH * SCR_HEIGHT * sizeof(unsigned char)];
-    double* zbuffer = new double[SCR_WIDTH * SCR_HEIGHT * sizeof(double)];
+    float* zbuffer = new float[SCR_WIDTH * SCR_HEIGHT * sizeof(float)];
 
     Matrix preModel = Matrix::Scale(1.0f, 1.0f, 1.0f);
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
@@ -88,9 +88,9 @@ int main()
     Matrix trans = Matrix::Translate(a, b, 0.0f);
 
     int width, height, nrChannels;
-    unsigned char* imagedata = stbi_load("./cube/default.png", &width, &height, &nrChannels, 0);
+    unsigned char* imagedata = stbi_load("./assets/default.png", &width, &height, &nrChannels, 0);
 
-    std::vector<Vector4> allVrticesResult;
+    std::vector<Vector4> allVerticesResult;
     std::vector<Vector4> allVerticesClip;
     std::vector<Vector4> allVerticesUV;
 
@@ -126,30 +126,32 @@ int main()
             Vector4 verticeNDC = verticeClip / verticeClip.w;
             Vector4 verticeResult = trans * (scale * verticeNDC);
 
-            allVrticesResult.push_back(verticeResult);
+            allVerticesResult.push_back(verticeResult);
             allVerticesClip.push_back(verticeClip);
             allVerticesUV.push_back(verticeUv);
         }
 
-        int size = ourModel.meshes[0].indices.size();
+        auto& indices = ourModel.meshes[0].indices;
+
+        int size = indices.size();
         for (int i = 0; i < size / 3; i++) {
             int index = i * 3;
             Vector4 verticesResult[] = {
-                Vector4(allVrticesResult[ourModel.meshes[0].indices[index]].x, allVrticesResult[ourModel.meshes[0].indices[index]].y, allVrticesResult[ourModel.meshes[0].indices[index]].z, 1.0f),
-                Vector4(allVrticesResult[ourModel.meshes[0].indices[index + 1]].x, allVrticesResult[ourModel.meshes[0].indices[index + 1]].y, allVrticesResult[ourModel.meshes[0].indices[index + 1]].z, 1.0f),
-                Vector4(allVrticesResult[ourModel.meshes[0].indices[index + 2]].x, allVrticesResult[ourModel.meshes[0].indices[index + 2]].y, allVrticesResult[ourModel.meshes[0].indices[index + 2]].z, 1.0f),
+                Vector4(allVerticesResult[indices[index]].x, allVerticesResult[indices[index]].y, allVerticesResult[indices[index]].z, 1.0f),
+                Vector4(allVerticesResult[indices[index + 1]].x, allVerticesResult[indices[index + 1]].y, allVerticesResult[indices[index + 1]].z, 1.0f),
+                Vector4(allVerticesResult[indices[index + 2]].x, allVerticesResult[indices[index + 2]].y, allVerticesResult[indices[index + 2]].z, 1.0f),
             };
 
             Vector4 verticesClip[] = {
-                Vector4(allVerticesClip[ourModel.meshes[0].indices[index]].x, allVerticesClip[ourModel.meshes[0].indices[index]].y, allVerticesClip[ourModel.meshes[0].indices[index]].z, 1.0f),
-                Vector4(allVerticesClip[ourModel.meshes[0].indices[index + 1]].x, allVerticesClip[ourModel.meshes[0].indices[index + 1]].y, allVerticesClip[ourModel.meshes[0].indices[index + 1]].z, 1.0f),
-                Vector4(allVerticesClip[ourModel.meshes[0].indices[index + 2]].x, allVerticesClip[ourModel.meshes[0].indices[index + 2]].y, allVerticesClip[ourModel.meshes[0].indices[index + 2]].z, 1.0f),
+                Vector4(allVerticesClip[indices[index]].x, allVerticesClip[indices[index]].y, allVerticesClip[indices[index]].z, allVerticesClip[indices[index]].w),
+                Vector4(allVerticesClip[indices[index + 1]].x, allVerticesClip[indices[index + 1]].y, allVerticesClip[indices[index + 1]].z, allVerticesClip[indices[index + 1]].w),
+                Vector4(allVerticesClip[indices[index + 2]].x, allVerticesClip[indices[index + 2]].y, allVerticesClip[indices[index + 2]].z, allVerticesClip[indices[index + 2]].w),
             };
 
             Vector4 verticesuv[] = {
-                Vector4(allVerticesUV[ourModel.meshes[0].indices[index]].x, allVerticesUV[ourModel.meshes[0].indices[index]].y, 0.0f, 1.0f),
-                Vector4(allVerticesUV[ourModel.meshes[0].indices[index + 1]].x, allVerticesUV[ourModel.meshes[0].indices[index + 1]].y, 0.0f, 1.0f),
-                Vector4(allVerticesUV[ourModel.meshes[0].indices[index + 2]].x, allVerticesUV[ourModel.meshes[0].indices[index + 2]].y, 0.0f, 1.0f),
+                Vector4(allVerticesUV[indices[index]].x, allVerticesUV[indices[index]].y, 0.0f, 1.0f),
+                Vector4(allVerticesUV[indices[index + 1]].x, allVerticesUV[indices[index + 1]].y, 0.0f, 1.0f),
+                Vector4(allVerticesUV[indices[index + 2]].x, allVerticesUV[indices[index + 2]].y, 0.0f, 1.0f),
             };
 
             scan(verticesResult, verticesClip, 3, data, imagedata, verticesuv, width, height, zbuffer);
@@ -177,7 +179,7 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        allVrticesResult.clear();
+        allVerticesResult.clear();
         allVerticesClip.clear();
         allVerticesUV.clear();
     }

@@ -3,7 +3,7 @@
 #include <vector>
 
 
-void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, double* zbuffer) {
+void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, float* zbuffer) {
     int Max_Y = 0;
     int Min_Y = (int)SCR_HEIGHT;
 
@@ -127,20 +127,20 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
         while (p && p->next != NULL) {
             for (int j = p->x; j <= p->next->x; j++) {
                 // p 0 1
-                double s1 = abs((j - vertices[1][0]) * (vertices[0][1] - vertices[1][1]) - (vertices[0][0] - vertices[1][0]) * (i - vertices[1][1]));
+                float s1 = abs((j - vertices[1][0]) * (vertices[0][1] - vertices[1][1]) - (vertices[0][0] - vertices[1][0]) * (i - vertices[1][1]));
                 // p 1 2
-                double s2 = abs((j - vertices[2][0]) * (vertices[1][1] - vertices[2][1]) - (vertices[1][0] - vertices[2][0]) * (i - vertices[2][1]));
+                float s2 = abs((j - vertices[2][0]) * (vertices[1][1] - vertices[2][1]) - (vertices[1][0] - vertices[2][0]) * (i - vertices[2][1]));
                 // p 0 2
-                double s3 = abs((j - vertices[2][0]) * (vertices[0][1] - vertices[2][1]) - (vertices[0][0] - vertices[2][0]) * (i - vertices[2][1]));
-                double total = s1 + s2 + s3;
-                double r1 = s1 / total;
-                double r2 = s2 / total;
-                double r3 = s3 / total;
-                double u = (r1 * veticeDivideW[2][0] + r2 * veticeDivideW[0][0] + r3 * veticeDivideW[1][0]);
-                double v = (r1 * veticeDivideW[2][1] + r2 * veticeDivideW[0][1] + r3 * veticeDivideW[1][1]);
-                double inversedW = (r1 * veticeDivideW[2][2] + r2 * veticeDivideW[0][2] + r3 * veticeDivideW[1][2]);
-                double zDivideW = (r1 * veticeDivideW[2][3] + r2 * veticeDivideW[0][3] + r3 * veticeDivideW[1][3]);
-                double z = zDivideW / inversedW;
+                float s3 = abs((j - vertices[2][0]) * (vertices[0][1] - vertices[2][1]) - (vertices[0][0] - vertices[2][0]) * (i - vertices[2][1]));
+                float total = s1 + s2 + s3;
+                float r1 = s1 / total;
+                float r2 = s2 / total;
+                float r3 = s3 / total;
+                float u = (r1 * veticeDivideW[2][0] + r2 * veticeDivideW[0][0] + r3 * veticeDivideW[1][0]);
+                float v = (r1 * veticeDivideW[2][1] + r2 * veticeDivideW[0][1] + r3 * veticeDivideW[1][1]);
+                float inversedW = (r1 * veticeDivideW[2][2] + r2 * veticeDivideW[0][2] + r3 * veticeDivideW[1][2]);
+                float zDivideW = (r1 * veticeDivideW[2][3] + r2 * veticeDivideW[0][3] + r3 * veticeDivideW[1][3]);
+                float z = zDivideW / inversedW;
                 int index = i * SCR_WIDTH + j;
                 int t = index * 3;
                 if ( z < zbuffer[index]) {
