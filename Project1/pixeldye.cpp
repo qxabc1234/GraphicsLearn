@@ -162,29 +162,34 @@ Color32 search(float u, float v, int width, int height, unsigned char* imagedata
     float x = u * width;
     float y = v * height;
 
-    float top = int(y) + 0.5;
-    float bottom = top - 1.0;
-    float right = int(x) + 0.5;
-    float left = right - 1.0;
+    float top = int(y) + 0.5f;
+    float bottom = top - 1.0f;
+    float right = int(x) + 0.5f;
+    float left = right - 1.0f;
     float xToLeft = x - left;
-    float xToRight = x - right;
-    float yToTop = y - top;
+    float xToRight = right - x;
+    float yToTop = top - y;
     float yToBottom = y - bottom;
-
-    float distance1 = std::sqrt(xToLeft * xToLeft + yToBottom * yToBottom);
-    float distance2 = std::sqrt(xToRight * xToRight + yToBottom * yToBottom);
-    float distance3 = std::sqrt(xToLeft * xToLeft + yToTop * yToTop);
-    float distance4 = std::sqrt(xToRight * xToRight + yToTop * yToTop);
+ 
 
     int leftbottom = (int(bottom) * width + int(left)) * 3;
     int rightbottom = (int(bottom) * width + int(right)) * 3;
     int lefttop = (int(top) * width + int(left)) * 3;
     int righttop = (int(top) * width + int(right)) * 3;
-    float total = distance1 + distance2 + distance3 + distance4;
+    int c0 = (int(top) * width + int(x)) * 3;
+    int c1 = (int(bottom) * width + int(x)) * 3;
     
-    float red = (distance1 * imagedata[leftbottom] + distance2 * imagedata[rightbottom] + distance3 * imagedata[lefttop] + distance4 * imagedata[righttop]) / total;
-    float green = (distance1 * imagedata[leftbottom + 1] + distance2 * imagedata[rightbottom + 1] + distance3 * imagedata[lefttop + 1] + distance4 * imagedata[righttop + 1]) / total;
-    float blue = (distance1 * imagedata[leftbottom + 2] + distance2 * imagedata[rightbottom + 2] + distance3 * imagedata[lefttop + 2] + distance4 * imagedata[righttop + 2]) / total;
+    float redInBottom = xToLeft * imagedata[rightbottom] + xToRight * imagedata[leftbottom];
+    float greenInBottom = xToLeft * imagedata[rightbottom + 1] + xToRight * imagedata[leftbottom + 1];
+    float blueInBottom = xToLeft * imagedata[rightbottom + 2] + xToRight * imagedata[leftbottom + 2];
+
+    float redInTop = xToLeft * imagedata[righttop] + xToRight * imagedata[lefttop];
+    float greenInTop = xToLeft * imagedata[righttop + 1] + xToRight * imagedata[lefttop + 1];
+    float blueInTop = xToLeft * imagedata[righttop + 2] + xToRight * imagedata[lefttop + 2];
+        
+    float red = yToTop * imagedata[c1] + yToBottom * imagedata[c0];
+    float green = yToTop * imagedata[c1 + 1] + yToBottom * imagedata[c0 + 1];
+    float blue = yToTop * imagedata[c1 + 2] + yToBottom * imagedata[c0 + 2];
 
     return {(unsigned char)red, (unsigned char)green, (unsigned char)blue, 0};
 }
