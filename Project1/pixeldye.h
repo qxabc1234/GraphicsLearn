@@ -25,6 +25,9 @@ struct Color32
 	float b;
 	float a;
 };
+
+
+
 void scan(Vector4 verticeNDC[], Vector4 verticesClip[], Vector4 verticesNormal[], Vector4 verticesWorld[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, float* zbuffer, float intensity, Vector4 lightDir, Vector4 lightColor, Vector4 cameraPos);
 Vector4 search(float u, float v, int width, int height, unsigned char* imagedata);
 

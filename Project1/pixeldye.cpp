@@ -47,7 +47,6 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], Vector4 verticesNormal[]
 
     AET* pAET = new AET;
     pAET->next = NULL;
-
     std::map<int, NET*> m;
 
     for (int j = 0; j < size; j++) {

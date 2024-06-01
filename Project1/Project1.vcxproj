@@ -138,20 +138,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FragmentShader.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
     <ClCompile Include="stb.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GraphicsLearn.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="pixeldye.cpp" />
     <ClCompile Include="Vector4.cpp" />
+    <ClCompile Include="VertexShader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommonData.h" />
+    <ClInclude Include="FragmentShader.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="pixeldye.h" />
+    <ClInclude Include="Pipeline.h" />
     <ClInclude Include="shader_s.h" />
     <ClInclude Include="Vector4.h" />
+    <ClInclude Include="VertexShader.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Project1\image.jpg" />
