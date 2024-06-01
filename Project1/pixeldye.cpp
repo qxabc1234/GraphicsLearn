@@ -3,12 +3,14 @@
 #include <vector>
 
 
-void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, float* zbuffer) {
+void scan(Vector4 verticeNDC[], Vector4 verticesClip[], Vector4 verticesNormal[], Vector4 verticesWorld [], int size, unsigned char* data, unsigned char* imagedata, Vector4 verticeuv[], int width, int height, float* zbuffer, float intensity, Vector4 lightDir, Vector4 lightColor, Vector4 cameraPos) {
     int Max_Y = 0;
     int Min_Y = (int)SCR_HEIGHT;
 
     std::vector<std::vector<int>> vertices;
     std::vector <std::vector<float>> veticeDivideW;
+    std::vector <std::vector<float>> normal;
+    std::vector<std::vector<float>> world;
 
     for (int i = 0; i < size; i++) {
         std::vector<int> v;
@@ -21,6 +23,16 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
         v1.push_back(1 / verticesClip[i].w);
         v1.push_back(verticeNDC[i].z / verticesClip[i].w);
         veticeDivideW.push_back(v1);
+        std::vector<float> v2;
+        v2.push_back(verticesNormal[i].x / verticesClip[i].w);
+        v2.push_back(verticesNormal[i].y / verticesClip[i].w);
+        v2.push_back(verticesNormal[i].z / verticesClip[i].w);
+        normal.push_back(v2);
+        std::vector<float> v3;
+        v3.push_back(verticesWorld[i].x / verticesClip[i].w);
+        v3.push_back(verticesWorld[i].y / verticesClip[i].w);
+        v3.push_back(verticesWorld[i].z / verticesClip[i].w);
+        world.push_back(v3);
 
     }
 
@@ -112,7 +124,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
         AET* q = pAET;
         p = q->next;
         while (p) {
-            if (p->ymax == i) {
+            if (p->ymax == i)  {
                 q->next = p->next;
                 delete p;
                 p = q->next;
@@ -141,17 +153,32 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
                 float inversedW = (r1 * veticeDivideW[2][2] + r2 * veticeDivideW[0][2] + r3 * veticeDivideW[1][2]);
                 float zDivideW = (r1 * veticeDivideW[2][3] + r2 * veticeDivideW[0][3] + r3 * veticeDivideW[1][3]);
                 float z = zDivideW / inversedW;
+                float normalx = (r1 * normal[2][0] + r2 * normal[0][0] + r3 * normal[1][0]) / inversedW;
+                float normaly = (r1 * normal[2][1] + r2 * normal[0][1] + r3 * normal[1][1]) / inversedW;
+                float normalz = (r1 * normal[2][2] + r2 * normal[0][2] + r3 * normal[1][2]) / inversedW;
+
+                float worldx = (r1 * world[2][0] + r2 * world[0][0] + r3 * world[1][0]) / inversedW;
+                float worldy = (r1 * world[2][1] + r2 * world[0][1] + r3 * world[1][1]) / inversedW;
+                float worldz = (r1 * world[2][2] + r2 * world[0][2] + r3 * world[1][2]) / inversedW;
+
+                Vector4 n(normalx, normaly, normalz, 0.0f);
+                Vector4 view(cameraPos.x - worldx, cameraPos.y - worldy, cameraPos.z - worldz, 0.0f);
                 int index = i * SCR_WIDTH + j;
                 int t = index * 3;
 
                 if ( z < zbuffer[index]) {
-                    Color32 color = search(u / inversedW, v / inversedW, width, height, imagedata);
-                    data[t] = color.r;
-                    data[t + 1] = color.g;
-                    data[t + 2] = color.b;
+                    Vector4 color = search(u / inversedW, v / inversedW, width, height, imagedata);
+                    float ambientStrength = 0.1;
+                    float diff = std::max(0.0f, n * lightDir);
+                    Vector4 diffuse = lightColor * diff;
+                    Vector4 ambient = lightColor * ambientStrength;
+                    data[t] = color.r * 255 * (diffuse.r + ambient.r);
+                    data[t + 1] = color.g * 255 * (diffuse.g + ambient.g);
+                    data[t + 2] = color.b * 255 * (diffuse.b + ambient.b);
+
                     zbuffer[index] = z;
                 }
-                
+
             }
             p = p->next->next;
         }
@@ -159,7 +186,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
 
 }
 
-Color32 search(float u, float v, int width, int height, unsigned char* imagedata) {
+Vector4 search(float u, float v, int width, int height, unsigned char* imagedata) {
     float x = u * width;
     float y = v * height;
 
@@ -192,6 +219,8 @@ Color32 search(float u, float v, int width, int height, unsigned char* imagedata
     float green = yToTop * imagedata[c1 + 1] + yToBottom * imagedata[c0 + 1];
     float blue = yToTop * imagedata[c1 + 2] + yToBottom * imagedata[c0 + 2];
 
-    return {(unsigned char)red, (unsigned char)green, (unsigned char)blue, 0};
+    return Vector4(red/255.0f, green/255.0f, blue/255.0f, 0.0f);
 }
+
+
 

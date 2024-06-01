@@ -2,7 +2,14 @@
 class Vector4
 {
 public:
-	float x, y, z, w;
+	union {
+		struct {
+			float x, y, z, w;
+		};
+		struct {
+			float r, g, b, a;
+		};
+	};
 
 public:
 	Vector4()
@@ -24,6 +31,8 @@ public:
 	Vector4 operator*(float a) const;
 	Vector4 operator/(float a) const;
 	Vector4 operator+(const Vector4& other) const;
+	float operator*(const Vector4& other) const;
+
 
 	Vector4 Normalize();
 

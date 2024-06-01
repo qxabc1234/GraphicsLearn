@@ -68,6 +68,13 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+    
+    //light
+
+    float intensity = 1.0f;
+    Vector4 lightDir(0.0f, 0.0f, 1.0f, 0.0f);
+    Vector4 lightColor(1.0f, 1.0f, 1.0f, 0.0f);
+
 
     Model ourModel("./assets/sphere.obj");
 
@@ -88,11 +95,14 @@ int main()
     Matrix trans = Matrix::Translate(a, b, 0.0f);
 
     int width, height, nrChannels;
-    unsigned char* imagedata = stbi_load("./assets/default.png", &width, &height, &nrChannels, 0);
+    unsigned char* imagedata = stbi_load("./assets/grey.png", &width, &height, &nrChannels, 0);
 
     std::vector<Vector4> allVerticesResult;
     std::vector<Vector4> allVerticesClip;
     std::vector<Vector4> allVerticesUV;
+    std::vector<Vector4> allVerticesNormal;
+    std::vector<Vector4> allVerticesWorld;
+
 
     //render
     //render end
@@ -116,25 +126,29 @@ int main()
         }
         Matrix model = Matrix::Rotate(roll, 1.0f, 0.0f, 0.0f) * Matrix::Rotate(pitch, 0.0f, 1.0f, 0.0f);
 
-
         for (int index = 0; index < ourModel.meshes[0].vertices.size(); index++) {
 
             Vector4 verticePos =  Vector4(ourModel.meshes[0].vertices[index].Position.x, ourModel.meshes[0].vertices[index].Position.y, ourModel.meshes[0].vertices[index].Position.z, 1.0f);
             Vector4 verticeUv = Vector4(ourModel.meshes[0].vertices[index].TexCoords.x, ourModel.meshes[0].vertices[index].TexCoords.y, 0.0f, 1.0f);
-            Vector4 verticeView = view * (model * verticePos);
+            Vector4 verticeWorld = model * verticePos;
+            Vector4 verticeView = view * verticeWorld;
             Vector4 verticeClip = proj * verticeView;
             Vector4 verticeNDC = verticeClip / verticeClip.w;
             Vector4 verticeResult = trans * (scale * verticeNDC);
+            Vector4 verticeNormal = model * Vector4(ourModel.meshes[0].vertices[index].Normal.x, ourModel.meshes[0].vertices[index].Normal.y, ourModel.meshes[0].vertices[index].Normal.z, 0.0f);
 
+
+            allVerticesWorld.push_back(verticeWorld);
             allVerticesResult.push_back(verticeResult);
             allVerticesClip.push_back(verticeClip);
             allVerticesUV.push_back(verticeUv);
+            allVerticesNormal.push_back(verticeNormal.Normalize());
         }
 
         auto& indices = ourModel.meshes[0].indices;
 
         int size = indices.size();
-        for (int i = 0; i < size / 3; i++) {
+        for (int i = 0; i < size / 3 ; i++) {
             int index = i * 3;
             Vector4 verticesResult[] = {
                 Vector4(allVerticesResult[indices[index]].x, allVerticesResult[indices[index]].y, allVerticesResult[indices[index]].z, 1.0f),
@@ -148,13 +162,25 @@ int main()
                 Vector4(allVerticesClip[indices[index + 2]].x, allVerticesClip[indices[index + 2]].y, allVerticesClip[indices[index + 2]].z, allVerticesClip[indices[index + 2]].w),
             };
 
+            Vector4 verticesWorld[] = {
+                Vector4(allVerticesWorld[indices[index]].x, allVerticesWorld[indices[index]].y, allVerticesWorld[indices[index]].z, allVerticesWorld[indices[index]].w),
+                Vector4(allVerticesWorld[indices[index + 1]].x, allVerticesWorld[indices[index + 1]].y, allVerticesWorld[indices[index + 1]].z, allVerticesWorld[indices[index + 1]].w),
+                Vector4(allVerticesWorld[indices[index + 2]].x, allVerticesWorld[indices[index + 2]].y, allVerticesWorld[indices[index + 2]].z, allVerticesWorld[indices[index + 2]].w),
+            };
+
             Vector4 verticesuv[] = {
                 Vector4(allVerticesUV[indices[index]].x, allVerticesUV[indices[index]].y, 0.0f, 1.0f),
                 Vector4(allVerticesUV[indices[index + 1]].x, allVerticesUV[indices[index + 1]].y, 0.0f, 1.0f),
                 Vector4(allVerticesUV[indices[index + 2]].x, allVerticesUV[indices[index + 2]].y, 0.0f, 1.0f),
             };
 
-            scan(verticesResult, verticesClip, 3, data, imagedata, verticesuv, width, height, zbuffer);
+            Vector4 verticesNormal[] = {
+                Vector4(allVerticesNormal[indices[index]].x, allVerticesNormal[indices[index]].y, allVerticesNormal[indices[index]].z, 0.0f),
+                Vector4(allVerticesNormal[indices[index + 1]].x, allVerticesNormal[indices[index + 1]].y, allVerticesNormal[indices[index + 1]].z, 0.0f),
+                 Vector4(allVerticesNormal[indices[index + 2]].x, allVerticesNormal[indices[index + 2]].y, allVerticesNormal[indices[index + 1]].z, 0.0f),
+            };
+
+            scan(verticesResult, verticesClip, verticesNormal, verticesWorld, 3, data, imagedata, verticesuv, width, height, zbuffer, intensity, lightDir, lightColor, cameraPos);
 
         }
 
@@ -182,6 +208,8 @@ int main()
         allVerticesResult.clear();
         allVerticesClip.clear();
         allVerticesUV.clear();
+        allVerticesNormal.clear();
+        allVerticesWorld.clear();
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -212,7 +240,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
         lastX = xpos;
         lastY = ypos;
 
-        float ratio = 0.005f;
+        float ratio = 0.3f;
         pitch += xoffset * ratio;
         roll += yoffset * ratio;
 

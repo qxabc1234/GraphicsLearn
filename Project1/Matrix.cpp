@@ -1,6 +1,8 @@
 #include "Matrix.h"
 #include <string>
 
+#define PI 3.1415927
+
 Matrix Matrix::Translate(float x, float y, float z)
 {
 	Matrix mat;
@@ -29,10 +31,11 @@ Matrix Matrix::Scale(float x, float y, float z)
 
 Matrix Matrix::Rotate(float degree, float x, float y, float z)
 {
+	float radian = degree * PI / 180.0f;
 	Vector4 v{ x, y, z, 0.0f };
 	Vector4 unitV = v.Normalize();
-	float s = sin(degree);
-	float c = cos(degree);
+	float s = sin(radian);
+	float c = cos(radian);
 	Vector4 vcos = unitV * (1.0 - c);
 
 

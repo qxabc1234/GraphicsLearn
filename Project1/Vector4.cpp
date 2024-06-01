@@ -16,6 +16,11 @@ Vector4 Vector4::operator+(const Vector4& other) const
 	return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
 }
 
+float Vector4::operator*(const Vector4& other) const
+{
+	return x * other.x + y * other.y + z * other.z + w * other.w;
+}
+
 Vector4 Vector4::Normalize()
 {
 	float len = std::sqrt(x * x + y * y + z * z + w * w);
