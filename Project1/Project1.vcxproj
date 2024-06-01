@@ -156,10 +156,6 @@
   <ItemGroup>
     <Image Include="Project1\image.jpg" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="4.1.texture.fs" />
-    <None Include="4.1.texture.vs" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

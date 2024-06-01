@@ -59,12 +59,4 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="4.1.texture.fs">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="4.1.texture.vs">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>
