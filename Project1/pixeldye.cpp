@@ -100,7 +100,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
         NET* ap = m[i];
         if (ap) ap = ap->next;
         while (ap) {
-            while (tq->next != NULL && (tq->next->x + tq->next->dx )<= (ap->x +ap->dx))
+            while (tq->next != NULL && (tq->next->x < ap->x || (tq->next->x == ap->x && tq->next->dx < ap->dx)))
                 tq = tq->next;
             NET* t = ap->next;
             ap->next = tq->next;
@@ -143,6 +143,7 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], int size, unsigned char*
                 float z = zDivideW / inversedW;
                 int index = i * SCR_WIDTH + j;
                 int t = index * 3;
+
                 if ( z < zbuffer[index]) {
                     Color32 color = search(u / inversedW, v / inversedW, width, height, imagedata);
                     data[t] = color.r;
