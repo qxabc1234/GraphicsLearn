@@ -2,6 +2,7 @@
 #include "VertexShader.h"
 #include "FragmentShader.h"
 #include <map>
+#include <algorithm>
 
 
 void Pipeline::Initialize(unsigned int width, unsigned int height)
@@ -33,6 +34,7 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
     int imagePos[3][2] = {{int(v0.ndcPos.x * a + a + 0.5), int(v0.ndcPos.y * b + b + 0.5)},
                           {int(v1.ndcPos.x * a + a + 0.5), int(v1.ndcPos.y * b + b + 0.5)},
                           {int(v2.ndcPos.x * a + a + 0.5), int(v2.ndcPos.y * b + b + 0.5)}};
+
 
 
     for (int i = 0; i < 3; i++) {
@@ -137,13 +139,14 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
         {
             for (int j = p->x; j <= p->next->x; j++) 
             {
- 
+                float px = 2.0f * (j + 0.5f) / data->width - 1;
+                float py = 2.0f * (i + 0.5f) / data->height - 1;
                 // p 0 1
-                int s1 = abs((j - imagePos[1][0]) * (imagePos[0][1] - imagePos[1][1]) - (imagePos[0][0] - imagePos[1][0]) * (i - imagePos[1][1]));
+                float s1 = abs((px - v1.ndcPos.x) * (v0.ndcPos.y - v1.ndcPos.y) - (v0.ndcPos.x - v1.ndcPos.x) * (py - v1.ndcPos.y));
                 // p 1 2
-                int s2 = abs((j - imagePos[2][0]) * (imagePos[1][1] - imagePos[2][1]) - (imagePos[1][0] - imagePos[2][0]) * (i - imagePos[2][1]));
+                float s2 = abs((px - v2.ndcPos.x) * (v1.ndcPos.y - v2.ndcPos.y) - (v1.ndcPos.x - v2.ndcPos.x) * (py - v2.ndcPos.y));
                 // p 0 2
-                int s3 = abs((j - imagePos[2][0]) * (imagePos[0][1] - imagePos[2][1]) - (imagePos[0][0] - imagePos[2][0]) * (i - imagePos[2][1]));
+                float s3 = abs((px - v2.ndcPos.x) * (v0.ndcPos.y - v2.ndcPos.y) - (v0.ndcPos.x - v2.ndcPos.x) * (py - v2.ndcPos.y));
                 float total = s1 + s2 + s3;
                 if (total < 1e-6) return;
                 float r1 = s1 / total;
@@ -162,9 +165,9 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                 float z = fragmentIn.ndcPos.z;
                 if (z < data->zbuffer[index])
                 {
-                    data->colors[t] = color.r * 255;
-                    data->colors[t + 1] = color.g * 255;
-                    data->colors[t + 2] = color.b * 255;
+                    data->colors[t] = std::clamp(color.r, 0.0f, 1.0f) * 255;
+                    data->colors[t + 1] = std::clamp(color.g, 0.0f, 1.0f) * 255;
+                    data->colors[t + 2] = std::clamp(color.b, 0.0f, 1.0f) * 255;
                     data->zbuffer[index] = z;
                 }
 
