@@ -41,7 +41,7 @@ Vector4 Vector4::Cross(const Vector4& other) const
 
 Vector4 Vector4::ComponentWiseMultiply(const Vector4& other) const
 {
-	return Vector4(x * other.x, y * other.y, z * other.z,  w * other.w);
+	return Vector4(x * other.x, y * other.y, z * other.z, w * other.w);
 }
 
 Vector4 operator*(float a, const Vector4& vec)

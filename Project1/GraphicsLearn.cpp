@@ -9,6 +9,8 @@
 #include "Matrix.h"
 #include "model.h"
 #include <stb_image.h>
+#include "Pipeline.h"
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -19,6 +21,11 @@ void processInput(GLFWwindow* window);
 Vector4 cameraPos(0.0f, 0.0f, 3.0f, 1.0f);
 Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 1.0f);
 Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
+
+//light
+float intensity = 1.0f;
+Vector4 lightDir(0.0f, 0.0f, 1.0f, 0.0f);
+Vector4 lightColor(1.0f, 1.0f, 1.0f, 0.0f);
 
 bool startPress = true;
 float roll = 0.0f;
@@ -69,44 +76,22 @@ int main()
         return -1;
     }
     
-    //light
-
-    float intensity = 1.0f;
-    Vector4 lightDir(0.0f, 0.0f, 1.0f, 0.0f);
-    Vector4 lightColor(1.0f, 1.0f, 1.0f, 0.0f);
-
-
     Model ourModel("./assets/sphere.obj");
 
-    unsigned int texture1;
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    unsigned char* data = new unsigned char[3 * SCR_WIDTH * SCR_HEIGHT * sizeof(unsigned char)];
-    float* zbuffer = new float[SCR_WIDTH * SCR_HEIGHT * sizeof(float)];
-
-    Matrix preModel = Matrix::Scale(1.0f, 1.0f, 1.0f);
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
     Matrix proj = Matrix::Persp(fov, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
-    float a = (SCR_WIDTH) / 2.0;
-    float b = (SCR_HEIGHT) / 2.0;
+    ShadingConstants constants;
+    constants.cameraPos = cameraPos;
+    constants.viewMatrix = view;
+    constants.projectionMatrix = proj;
+    constants.lightColor = lightColor;
+    constants.lightDir = lightDir;
+    constants.mainTex = new Texture2D("./assets/grey.png");
+    constants.intensity = intensity;
 
-    Matrix scale = Matrix::Scale(a, b, 1.0f);
-    Matrix trans = Matrix::Translate(a, b, 0.0f);
-
-    int width, height, nrChannels;
-    unsigned char* imagedata = stbi_load("./assets/grey.png", &width, &height, &nrChannels, 0);
-
-    std::vector<Vector4> allVerticesResult;
-    std::vector<Vector4> allVerticesClip;
-    std::vector<Vector4> allVerticesUV;
-    std::vector<Vector4> allVerticesNormal;
-    std::vector<Vector4> allVerticesWorld;
-
-
-    //render
-    //render end
-
+    Pipeline pipeline;
+    pipeline.Initialize(SCR_WIDTH, SCR_HEIGHT);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -116,106 +101,24 @@ int main()
         processInput(window);
 
         //render
-
-        for (unsigned int i = 0; i < SCR_WIDTH * SCR_HEIGHT; i++)
-        {
-            data[i * 3] = (unsigned char)(0.0f);
-            data[i * 3 + 1] = (unsigned char)(255.0f);
-            data[i * 3 + 2] = (unsigned char)(0.0f);
-            zbuffer[i] = 1.0;
-        }
+        pipeline.Clear();
         Matrix model = Matrix::Rotate(roll, 1.0f, 0.0f, 0.0f) * Matrix::Rotate(pitch, 0.0f, 1.0f, 0.0f);
+        constants.modelMatrix = model;
 
-        for (int index = 0; index < ourModel.meshes[0].vertices.size(); index++) {
+        pipeline.DrawCall(ourModel.meshes[0].vertices, ourModel.meshes[0].indices, constants);
 
-            Vector4 verticePos =  Vector4(ourModel.meshes[0].vertices[index].Position.x, ourModel.meshes[0].vertices[index].Position.y, ourModel.meshes[0].vertices[index].Position.z, 1.0f);
-            Vector4 verticeUv = Vector4(ourModel.meshes[0].vertices[index].TexCoords.x, ourModel.meshes[0].vertices[index].TexCoords.y, 0.0f, 1.0f);
-            Vector4 verticeWorld = model * verticePos;
-            Vector4 verticeView = view * verticeWorld;
-            Vector4 verticeClip = proj * verticeView;
-            Vector4 verticeNDC = verticeClip / verticeClip.w;
-            Vector4 verticeResult = trans * (scale * verticeNDC);
-            Vector4 verticeNormal = model * Vector4(ourModel.meshes[0].vertices[index].Normal.x, ourModel.meshes[0].vertices[index].Normal.y, ourModel.meshes[0].vertices[index].Normal.z, 0.0f);
-
-
-            allVerticesWorld.push_back(verticeWorld);
-            allVerticesResult.push_back(verticeResult);
-            allVerticesClip.push_back(verticeClip);
-            allVerticesUV.push_back(verticeUv);
-            allVerticesNormal.push_back(verticeNormal.Normalize());
-        }
-
-        auto& indices = ourModel.meshes[0].indices;
-
-        int size = indices.size();
-        for (int i = 0; i < size / 3 ; i++) {
-            int index = i * 3;
-            Vector4 verticesResult[] = {
-                Vector4(allVerticesResult[indices[index]].x, allVerticesResult[indices[index]].y, allVerticesResult[indices[index]].z, 1.0f),
-                Vector4(allVerticesResult[indices[index + 1]].x, allVerticesResult[indices[index + 1]].y, allVerticesResult[indices[index + 1]].z, 1.0f),
-                Vector4(allVerticesResult[indices[index + 2]].x, allVerticesResult[indices[index + 2]].y, allVerticesResult[indices[index + 2]].z, 1.0f),
-            };
-
-            Vector4 verticesClip[] = {
-                Vector4(allVerticesClip[indices[index]].x, allVerticesClip[indices[index]].y, allVerticesClip[indices[index]].z, allVerticesClip[indices[index]].w),
-                Vector4(allVerticesClip[indices[index + 1]].x, allVerticesClip[indices[index + 1]].y, allVerticesClip[indices[index + 1]].z, allVerticesClip[indices[index + 1]].w),
-                Vector4(allVerticesClip[indices[index + 2]].x, allVerticesClip[indices[index + 2]].y, allVerticesClip[indices[index + 2]].z, allVerticesClip[indices[index + 2]].w),
-            };
-
-            Vector4 verticesWorld[] = {
-                Vector4(allVerticesWorld[indices[index]].x, allVerticesWorld[indices[index]].y, allVerticesWorld[indices[index]].z, allVerticesWorld[indices[index]].w),
-                Vector4(allVerticesWorld[indices[index + 1]].x, allVerticesWorld[indices[index + 1]].y, allVerticesWorld[indices[index + 1]].z, allVerticesWorld[indices[index + 1]].w),
-                Vector4(allVerticesWorld[indices[index + 2]].x, allVerticesWorld[indices[index + 2]].y, allVerticesWorld[indices[index + 2]].z, allVerticesWorld[indices[index + 2]].w),
-            };
-
-            Vector4 verticesuv[] = {
-                Vector4(allVerticesUV[indices[index]].x, allVerticesUV[indices[index]].y, 0.0f, 1.0f),
-                Vector4(allVerticesUV[indices[index + 1]].x, allVerticesUV[indices[index + 1]].y, 0.0f, 1.0f),
-                Vector4(allVerticesUV[indices[index + 2]].x, allVerticesUV[indices[index + 2]].y, 0.0f, 1.0f),
-            };
-
-            Vector4 verticesNormal[] = {
-                Vector4(allVerticesNormal[indices[index]].x, allVerticesNormal[indices[index]].y, allVerticesNormal[indices[index]].z, 0.0f),
-                Vector4(allVerticesNormal[indices[index + 1]].x, allVerticesNormal[indices[index + 1]].y, allVerticesNormal[indices[index + 1]].z, 0.0f),
-                 Vector4(allVerticesNormal[indices[index + 2]].x, allVerticesNormal[indices[index + 2]].y, allVerticesNormal[indices[index + 1]].z, 0.0f),
-            };
-
-            scan(verticesResult, verticesClip, verticesNormal, verticesWorld, 3, data, imagedata, verticesuv, width, height, zbuffer, intensity, lightDir, lightColor, cameraPos);
-
-        }
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        GLuint fboId = 0;
-        glGenFramebuffers(1, &fboId);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, fboId);
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-            GL_TEXTURE_2D, texture1, 0);
-
-        //render end
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);  // if not already bound
-        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT,
-            GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        pipeline.Present();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        allVerticesResult.clear();
-        allVerticesClip.clear();
-        allVerticesUV.clear();
-        allVerticesNormal.clear();
-        allVerticesWorld.clear();
+    
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
-    delete[] data;
-    delete[] imagedata;
+ 
     glfwTerminate();
     return 0;
 }

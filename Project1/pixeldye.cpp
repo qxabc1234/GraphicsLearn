@@ -138,11 +138,11 @@ void scan(Vector4 verticeNDC[], Vector4 verticesClip[], Vector4 verticesNormal[]
         while (p && p->next != NULL) {
             for (int j = p->x; j <= p->next->x; j++) {
                 // p 0 1
-                float s1 = abs((j - vertices[1][0]) * (vertices[0][1] - vertices[1][1]) - (vertices[0][0] - vertices[1][0]) * (i - vertices[1][1]));
+                float s1 = std::abs((j - vertices[1][0]) * (vertices[0][1] - vertices[1][1]) - (vertices[0][0] - vertices[1][0]) * (i - vertices[1][1]));
                 // p 1 2
-                float s2 = abs((j - vertices[2][0]) * (vertices[1][1] - vertices[2][1]) - (vertices[1][0] - vertices[2][0]) * (i - vertices[2][1]));
+                float s2 = std::abs((j - vertices[2][0]) * (vertices[1][1] - vertices[2][1]) - (vertices[1][0] - vertices[2][0]) * (i - vertices[2][1]));
                 // p 0 2
-                float s3 = abs((j - vertices[2][0]) * (vertices[0][1] - vertices[2][1]) - (vertices[0][0] - vertices[2][0]) * (i - vertices[2][1]));
+                float s3 = std::abs((j - vertices[2][0]) * (vertices[0][1] - vertices[2][1]) - (vertices[0][0] - vertices[2][0]) * (i - vertices[2][1]));
                 float total = s1 + s2 + s3;
                 float r1 = s1 / total;
                 float r2 = s2 / total;

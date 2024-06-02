@@ -34,7 +34,7 @@ struct ShadingConstants
 	Vector4 lightDir;
 	Vector4 lightColor;
 	Vector4 cameraPos;
-	Texture mainTex;
+	Texture2D* mainTex;
 };
 
 struct PipelineData
@@ -48,19 +48,21 @@ struct PipelineData
 	{
 		this->width = width;
 		this->height = height;
-
 		unsigned char* colors = new unsigned char[3 * width * height * sizeof(unsigned char)];
 		float* zbuffer = new float[width * height * sizeof(float)];
+		this->colors = colors;
+		this->zbuffer = zbuffer;
+	}
 
+	void Clear() 
+	{
 		for (unsigned int i = 0; i < width * height; i++)
 		{
 			colors[i * 3] = (unsigned char)(0.0f);
 			colors[i * 3 + 1] = (unsigned char)(255.0f);
 			colors[i * 3 + 2] = (unsigned char)(0.0f);
-			zbuffer[i] = 1.0;
+			zbuffer[i] = 1.0f;
 		}
-		this->colors = colors;
-		this->zbuffer = zbuffer;
 	}
 
 	~PipelineData() 

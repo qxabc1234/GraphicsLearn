@@ -26,6 +26,8 @@ public:
 	~Pipeline();
 
 	void DrawCall(const vector<Vertex>& vertices, const vector<unsigned int>& indices, const ShadingConstants& constants);
+	void Present();
+	void Clear();
 
 private:
 	void Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexOut& v2, const ShadingConstants& constants);

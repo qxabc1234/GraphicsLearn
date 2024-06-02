@@ -16,7 +16,8 @@ void Pipeline::Initialize(unsigned int width, unsigned int height)
 
 Pipeline::~Pipeline()
 {
-    delete data;
+    if (data != nullptr)
+        delete data;
     VertexOutBuffer.clear();
 }
 
@@ -26,10 +27,13 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
     int Min_Y = data->height;
     int voLen = sizeof(v0.data) / sizeof(Vector4);
     FragmentShader fs;
+    float a = data->width / 2.0f;
+    float b = data->height / 2.0f;
     
-    int imagePos[3][2] = {{int((v0.clipPos.x / v0.clipPos.w) * 2 / data->width + 2 / data->width + 0.5), int((v0.clipPos.y / v0.clipPos.w) * 2 / data->height + 2 / data->height + 0.5)},
-                          {int((v1.clipPos.x / v1.clipPos.w) * 2 / data->width + 2 / data->width + 0.5), int((v1.clipPos.y / v1.clipPos.w) * 2 / data->height + 2 / data->height + 0.5)},
-                          {int((v2.clipPos.x / v2.clipPos.w) * 2 / data->width + 2 / data->width + 0.5), int((v2.clipPos.y / v2.clipPos.w) * 2 / data->height + 2 / data->height + 0.5)}};
+    int imagePos[3][2] = {{int(v0.ndcPos.x * a + a + 0.5), int(v0.ndcPos.y * b + b + 0.5)},
+                          {int(v1.ndcPos.x * a + a + 0.5), int(v1.ndcPos.y * b + b + 0.5)},
+                          {int(v2.ndcPos.x * a + a + 0.5), int(v2.ndcPos.y * b + b + 0.5)}};
+
 
     for (int i = 0; i < 3; i++) {
         if (imagePos[i][1] > Max_Y)
@@ -133,13 +137,15 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
         {
             for (int j = p->x; j <= p->next->x; j++) 
             {
+ 
                 // p 0 1
-                float s1 = abs((j - imagePos[1][0]) * (imagePos[0][1] - imagePos[1][1]) - (imagePos[0][0] - imagePos[1][0]) * (i - imagePos[1][1]));
+                int s1 = abs((j - imagePos[1][0]) * (imagePos[0][1] - imagePos[1][1]) - (imagePos[0][0] - imagePos[1][0]) * (i - imagePos[1][1]));
                 // p 1 2
-                float s2 = abs((j - imagePos[2][0]) * (imagePos[1][1] - imagePos[2][1]) - (imagePos[1][0] - imagePos[2][0]) * (i - imagePos[2][1]));
+                int s2 = abs((j - imagePos[2][0]) * (imagePos[1][1] - imagePos[2][1]) - (imagePos[1][0] - imagePos[2][0]) * (i - imagePos[2][1]));
                 // p 0 2
-                float s3 = abs((j - imagePos[2][0]) * (imagePos[0][1] - imagePos[2][1]) - (imagePos[0][0] - imagePos[2][0]) * (i - imagePos[2][1]));
+                int s3 = abs((j - imagePos[2][0]) * (imagePos[0][1] - imagePos[2][1]) - (imagePos[0][0] - imagePos[2][0]) * (i - imagePos[2][1]));
                 float total = s1 + s2 + s3;
+                if (total < 1e-6) return;
                 float r1 = s1 / total;
                 float r2 = s2 / total;
                 float r3 = s3 / total;
@@ -149,12 +155,12 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                 {
                     fragmentIn.data[k] = (r1 / v2.clipPos.w * v2.data[k] + r2 / v0.clipPos.w * v0.data[k] + r3 / v1.clipPos.w * v1.data[k]) / inversedW;
                 }
+   
                 Vector4 color = fs.ShaderProc(fragmentIn, constants);
-                      
                 int index = i * (data->width) + j;
                 int t = index * 3;
-                int z = fragmentIn.ndcPos.z ;
-                if ( z < data->zbuffer[index])
+                float z = fragmentIn.ndcPos.z;
+                if (z < data->zbuffer[index])
                 {
                     data->colors[t] = color.r * 255;
                     data->colors[t + 1] = color.g * 255;
@@ -189,5 +195,30 @@ void Pipeline::DrawCall(const vector<Vertex>& vertices, const vector<unsigned in
         Rasterize(VertexOutBuffer[indices[index]], VertexOutBuffer[indices[index + 1]], VertexOutBuffer[indices[index + 2]], constants);
     }
 
+    VertexOutBuffer.clear();
+}
 
+void Pipeline::Present()
+{
+    unsigned int texture1;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, data->width, data->height, 0, GL_RGB, GL_UNSIGNED_BYTE, data->colors);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    GLuint fboId = 0;
+    glGenFramebuffers(1, &fboId);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fboId);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, texture1, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);  
+    glBlitFramebuffer(0, 0, data->width, data->height, 0, 0, data->width, data->height,
+        GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+void Pipeline::Clear()
+{
+    data->Clear();
 }

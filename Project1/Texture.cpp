@@ -1,14 +1,14 @@
 #include "Texture.h"
 #include <stb_image.h>
 
-Texture::Texture(char const* filename)
+Texture2D::Texture2D(char const* filename)
 {
 	int nrChannels;
 	imagedata = stbi_load(filename, &width, &height, &nrChannels, 0);
 
 }
 
-Texture::~Texture()
+Texture2D::~Texture2D()
 {
 	if (imagedata != nullptr)
 	{
@@ -17,7 +17,7 @@ Texture::~Texture()
 	
 }
 
-Vector4 Texture::Sample(float u, float v) const
+Vector4 Texture2D::Sample(float u, float v) const
 {
     float x = u * width;
     float y = v * height;

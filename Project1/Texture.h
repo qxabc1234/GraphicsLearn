@@ -1,7 +1,7 @@
 #pragma once
 #include "Vector4.h"
 
-class Texture
+class Texture2D
 {
 private:
 	int width, height;
@@ -16,8 +16,8 @@ public:
 	{
 		return height;
 	}
-	Texture(char const* filename);
-	~Texture();
+	Texture2D(char const* filename);
+	~Texture2D();
 	Vector4 Sample(float u, float v) const;
 
 };
