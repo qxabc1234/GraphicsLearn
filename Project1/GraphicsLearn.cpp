@@ -86,7 +86,7 @@ int main()
     constants.projectionMatrix = proj;
     constants.lightColor = lightColor;
     constants.lightDir = lightDir;
-    constants.mainTex = new Texture2D("./assets/backpack/diffuse.jpg");
+    constants.mainTex = new Texture2D("./assets/backpack/normal.png");
     constants.intensity = intensity;
 
     Pipeline pipeline;
