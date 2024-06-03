@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "pixeldye.h"
 
 #include <iostream>
 #include "Vector4.h"
@@ -28,16 +27,16 @@ Vector4 lightDir(0.0f, 0.0f, 1.0f, 0.0f);
 Vector4 lightColor(1.0f, 1.0f, 1.0f, 0.0f);
 
 bool startPress = true;
-float roll = 0.0f;
-float pitch = 0.0f;
+float roll = 0.0;
+float pitch = 0.0;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
-float nowX = 800.0f / 2.0;
-float nowY = 600.0 / 2.0;
 float fov = 45.0f;
 Vector4 axle(0.0f, 0.0f, 0.0f, 0.0f);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 
 int main()
 {
@@ -163,8 +162,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
         if (startPress) {
             glfwGetCursorPos(window, &xpos, &ypos);
-            lastX = xpos;
-            lastY = ypos;
+            lastX = static_cast<float>(xpos);
+            lastY = static_cast<float>(ypos);
             startPress = false;
         }
     }

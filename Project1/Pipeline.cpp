@@ -51,11 +51,11 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
         if (imagePos[(j - 1 + 3) % 3][1] > imagePos[j][1])
         {
             Edge p;
-            p.x = imagePos[j][0];
-            p.y = imagePos[j][1];
-            p.ymax = imagePos[(j - 1 + 3) % 3][1];
-            float DX = imagePos[(j - 1 + 3) % 3][0] - imagePos[j][0];
-            float DY = imagePos[(j - 1 + 3) % 3][1] - imagePos[j][1];
+            p.x = (float)imagePos[j][0];
+            p.y = (float)imagePos[j][1];
+            p.ymax = (float)imagePos[(j - 1 + 3) % 3][1];
+            float DX = (float)imagePos[(j - 1 + 3) % 3][0] - imagePos[j][0];
+            float DY = (float)imagePos[(j - 1 + 3) % 3][1] - imagePos[j][1];
             p.dx = DX / DY;
             p.isValid = true;
             e[i++] = p;
@@ -63,11 +63,11 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
         if (imagePos[(j + 1 + 3) % 3][1] > imagePos[j][1])
         {
             Edge p;
-            p.x = imagePos[j][0];
-            p.y = imagePos[j][1];
-            p.ymax = imagePos[(j + 1 + 3) % 3][1];
-            float DX = imagePos[(j + 1 + 3) % 3][0] - imagePos[j][0];
-            float DY = imagePos[(j + 1 + 3) % 3][1] - imagePos[j][1];
+            p.x = (float)imagePos[j][0];
+            p.y = (float)imagePos[j][1];
+            p.ymax = (float)imagePos[(j + 1 + 3) % 3][1];
+            float DX = (float)imagePos[(j + 1 + 3) % 3][0] - imagePos[j][0];
+            float DY = (float)imagePos[(j + 1 + 3) % 3][1] - imagePos[j][1];
             p.dx = DX / DY;
             p.isValid = true;
             e[i++] = p;
@@ -103,7 +103,7 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
 
         if (ae[0].isValid && ae[1].isValid)
         {
-            for (int j = min(ae[0].x, ae[1].x); j <= max(ae[0].x, ae[1].x); j++)
+            for (int j = (int)min(ae[0].x, ae[1].x); j <= max(ae[0].x, ae[1].x); j++)
             {
                 float px = 2.0f * (j + 0.5f) / data->width - 1;
                 float py = 2.0f * (i + 0.5f) / data->height - 1;
@@ -131,9 +131,9 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                 float z = fragmentIn.ndcPos.z;
                 if (z < data->zbuffer[index])
                 {
-                    data->colors[t] = std::clamp(color.r, 0.0f, 1.0f) * 255;
-                    data->colors[t + 1] = std::clamp(color.g, 0.0f, 1.0f) * 255;
-                    data->colors[t + 2] = std::clamp(color.b, 0.0f, 1.0f) * 255;
+                    data->colors[t] = (unsigned char)(std::clamp(color.r, 0.0f, 1.0f) * 255.0f);
+                    data->colors[t + 1] = (unsigned char)(std::clamp(color.g, 0.0f, 1.0f) * 255.0f);
+                    data->colors[t + 2] = (unsigned char)(std::clamp(color.b, 0.0f, 1.0f) * 255.0f);
                     data->zbuffer[index] = z;
                 }
 
@@ -156,7 +156,7 @@ void Pipeline::DrawCall(const vector<Vertex>& vertices, const vector<unsigned in
     }
 
 
-    int size = indices.size();
+    int size = (int)indices.size();
     for (int i = 0; i < size / 3; i++)
     {
         int index = i * 3;

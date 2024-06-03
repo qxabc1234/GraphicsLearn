@@ -58,9 +58,9 @@ struct PipelineData
 	{
 		for (unsigned int i = 0; i < width * height; i++)
 		{
-			colors[i * 3] = (unsigned char)(0.0f);
-			colors[i * 3 + 1] = (unsigned char)(255.0f);
-			colors[i * 3 + 2] = (unsigned char)(0.0f);
+			colors[i * 3] = (unsigned char)(49.0f);
+			colors[i * 3 + 1] = (unsigned char)(77.0f);
+			colors[i * 3 + 2] = (unsigned char)(121.0f);
 			zbuffer[i] = 1.0f;
 		}
 	}

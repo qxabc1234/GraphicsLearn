@@ -6,8 +6,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <iostream>#pragma once
-
+#include <iostream>
 
 class Shader
 {

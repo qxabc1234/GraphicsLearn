@@ -13,7 +13,7 @@ typedef struct XET
 		XET* next;
 	}AET, NET;
 
-typedef struct Edge
+struct Edge
 {
 	float x;
 	float y;
