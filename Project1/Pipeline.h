@@ -13,6 +13,14 @@ typedef struct XET
 		XET* next;
 	}AET, NET;
 
+typedef struct Edge
+{
+	float x;
+	float ymax;
+	float dx;
+	bool isValid = false;
+};
+
 private:
 	PipelineData* data;
 	std::vector<VertexOut> VertexOutBuffer;

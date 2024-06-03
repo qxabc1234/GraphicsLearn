@@ -18,7 +18,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 void processInput(GLFWwindow* window);
 
 //camera
-Vector4 cameraPos(0.0f, 0.0f, 3.0f, 1.0f);
+Vector4 cameraPos(0.0f, 0.0f, 7.0f, 1.0f);
 Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 1.0f);
 Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -87,7 +87,7 @@ int main()
     constants.projectionMatrix = proj;
     constants.lightColor = lightColor;
     constants.lightDir = lightDir;
-    constants.mainTex = new Texture2D("./assets/grey.png");
+    constants.mainTex = new Texture2D("./assets/default.png");
     constants.intensity = intensity;
 
     Pipeline pipeline;
@@ -104,8 +104,12 @@ int main()
         pipeline.Clear();
         Matrix model = Matrix::Rotate(roll, 1.0f, 0.0f, 0.0f) * Matrix::Rotate(pitch, 0.0f, 1.0f, 0.0f);
         constants.modelMatrix = model;
+        //
+        for (int i = 0; i < ourModel.meshes.size(); i++)
+        {
+            pipeline.DrawCall(ourModel.meshes[i].vertices, ourModel.meshes[i].indices, constants);
 
-        pipeline.DrawCall(ourModel.meshes[0].vertices, ourModel.meshes[0].indices, constants);
+        }
 
         pipeline.Present();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -118,7 +122,7 @@ int main()
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
- 
+    delete constants.mainTex;
     glfwTerminate();
     return 0;
 }
