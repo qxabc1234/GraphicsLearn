@@ -16,6 +16,7 @@ typedef struct XET
 typedef struct Edge
 {
 	float x;
+	float y;
 	float ymax;
 	float dx;
 	bool isValid = false;

@@ -10,6 +10,6 @@ VertexOut VertexShader::ShaderProc(Vertex v, const ShadingConstants& constants)
     vo.worldNormal = (constants.modelMatrix * Vector4(v.Normal, 0)).Normalize();
     vo.uv = Vector4(v.TexCoords);
     vo.ndcPos = vo.clipPos / vo.clipPos.w;
-
+  
     return vo;
 }

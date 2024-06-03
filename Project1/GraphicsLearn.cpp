@@ -76,7 +76,7 @@ int main()
         return -1;
     }
     
-    Model ourModel("./assets/sphere.obj");
+    Model ourModel("./assets/backpack/backpack.obj");
 
     Matrix view = Matrix::View(cameraPos, cameraTarget, up);
     Matrix proj = Matrix::Persp(fov, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
@@ -87,7 +87,7 @@ int main()
     constants.projectionMatrix = proj;
     constants.lightColor = lightColor;
     constants.lightDir = lightDir;
-    constants.mainTex = new Texture2D("./assets/default.png");
+    constants.mainTex = new Texture2D("./assets/backpack/diffuse.jpg");
     constants.intensity = intensity;
 
     Pipeline pipeline;

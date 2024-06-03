@@ -1,13 +1,13 @@
 #include "Pipeline.h"
 #include "VertexShader.h"
 #include "FragmentShader.h"
-#include <map>
+#include <unordered_map>
 #include <algorithm>
 
 
 void Pipeline::Initialize(unsigned int width, unsigned int height)
 {
-    if (data != nullptr) 
+    if (data != nullptr)
     {
         delete data;
     }
@@ -30,10 +30,10 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
     FragmentShader fs;
     float a = data->width / 2.0f;
     float b = data->height / 2.0f;
-    
-    int imagePos[3][2] = {{int(v0.ndcPos.x * a + a + 0.5), int(v0.ndcPos.y * b + b + 0.5)},
+
+    int imagePos[3][2] = { {int(v0.ndcPos.x * a + a + 0.5), int(v0.ndcPos.y * b + b + 0.5)},
                           {int(v1.ndcPos.x * a + a + 0.5), int(v1.ndcPos.y * b + b + 0.5)},
-                          {int(v2.ndcPos.x * a + a + 0.5), int(v2.ndcPos.y * b + b + 0.5)}};
+                          {int(v2.ndcPos.x * a + a + 0.5), int(v2.ndcPos.y * b + b + 0.5)} };
 
 
 
@@ -44,100 +44,66 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
             Min_Y = imagePos[i][1];
     }
 
-    AET* pAET = new AET;
-    pAET->next = NULL;
-    std::map<int, NET*> m;
-
-    for (int j = 0; j < 3; j++) 
+    Edge e[3];
+    int i = 0;
+    for (int j = 0; j < 3; j++)
     {
         if (imagePos[(j - 1 + 3) % 3][1] > imagePos[j][1])
         {
-            NET* p = new NET;
-            p->x = imagePos[j][0];
-            p->ymax = imagePos[(j - 1 + 3) % 3][1];
+            Edge p;
+            p.x = imagePos[j][0];
+            p.y = imagePos[j][1];
+            p.ymax = imagePos[(j - 1 + 3) % 3][1];
             float DX = imagePos[(j - 1 + 3) % 3][0] - imagePos[j][0];
             float DY = imagePos[(j - 1 + 3) % 3][1] - imagePos[j][1];
-            p->dx = DX / DY;
-            NET* q = m[imagePos[j][1]];
-            if (q == NULL) {
-                q = new NET;
-                q->next = p;
-                p->next = NULL;
-                m[imagePos[j][1]] = q;
-            }
-            else {
-                p->next = q->next;
-                q->next = p;
-            }
+            p.dx = DX / DY;
+            p.isValid = true;
+            e[i++] = p;
         }
         if (imagePos[(j + 1 + 3) % 3][1] > imagePos[j][1])
         {
-            NET* p = new NET;
-            p->x = imagePos[j][0];
-            p->ymax = imagePos[(j + 1 + 3) % 3][1];
+            Edge p;
+            p.x = imagePos[j][0];
+            p.y = imagePos[j][1];
+            p.ymax = imagePos[(j + 1 + 3) % 3][1];
             float DX = imagePos[(j + 1 + 3) % 3][0] - imagePos[j][0];
             float DY = imagePos[(j + 1 + 3) % 3][1] - imagePos[j][1];
-            p->dx = DX / DY;
-
-            NET* q = m[imagePos[j][1]];
-            if (q == NULL) {
-                q = new NET;
-                q->next = p;
-                p->next = NULL;
-                m[imagePos[j][1]] = q;
-            }
-            else {
-                p->next = q->next;
-                q->next = p;
-            }
+            p.dx = DX / DY;
+            p.isValid = true;
+            e[i++] = p;
         }
     }
 
-    for (int i = Min_Y; i <= Max_Y; i++) 
+    Edge ae[2];
+
+    for (int i = max(Min_Y, 0); i <= Max_Y; i++)
     {
-
-        NET* p = pAET->next;
-        while (p)
+        for (int k = 0; k < 2; k++)
         {
-            p->x = p->x + p->dx;
-            p = p->next;
+            ae[k].x = ae[k].x + ae[k].dx;
+            if (ae[k].ymax == i)
+                ae[k].isValid = false;
         }
+            
 
-        AET* tq = pAET;
-        NET* ap = m[i];
-        if (ap) ap = ap->next;
-        while (ap) 
+        for (int k = 0; k < 3; k++)
         {
-            while (tq->next != NULL && (tq->next->x < ap->x || (tq->next->x == ap->x && tq->next->dx < ap->dx)))
-                tq = tq->next;
-            NET* t = ap->next;
-            ap->next = tq->next;
-            tq->next = ap;
-            ap = t;
-            tq = pAET;
-        }
-
-        AET* q = pAET;
-        p = q->next;
-        while (p) 
-        {
-            if (p->ymax == i) 
+            if (i == e[k].y && e[k].isValid)
             {
-                q->next = p->next;
-                delete p;
-                p = q->next;
-            }
-            else 
-            {
-                q = q->next;
-                p = q->next;
-            }
+                for (int l = 0; l < 2; l++)
+                {
+                    if (!ae[l].isValid)
+                    {
+                        ae[l] = e[k];
+                        break;
+                    }
+                }
+            }      
         }
 
-        p = pAET->next;
-        while (p && p->next != NULL) 
+        if (ae[0].isValid && ae[1].isValid)
         {
-            for (int j = p->x; j <= p->next->x; j++) 
+            for (int j = min(ae[0].x, ae[1].x); j <= max(ae[0].x, ae[1].x); j++)
             {
                 float px = 2.0f * (j + 0.5f) / data->width - 1;
                 float py = 2.0f * (i + 0.5f) / data->height - 1;
@@ -154,11 +120,11 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                 float r3 = s3 / total;
                 float inversedW = (r1 / v2.clipPos.w + r2 / v0.clipPos.w + r3 / v1.clipPos.w);
                 VertexOut fragmentIn;
-                for (int k = 0; k < voLen; k++) 
+                for (int k = 0; k < voLen; k++)
                 {
                     fragmentIn.data[k] = (r1 / v2.clipPos.w * v2.data[k] + r2 / v0.clipPos.w * v0.data[k] + r3 / v1.clipPos.w * v1.data[k]) / inversedW;
                 }
-   
+
                 Vector4 color = fs.ShaderProc(fragmentIn, constants);
                 int index = i * (data->width) + j;
                 int t = index * 3;
@@ -172,27 +138,26 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                 }
 
             }
-            p = p->next->next;
         }
+
     }
 
 }
-
-
 
 void Pipeline::DrawCall(const vector<Vertex>& vertices, const vector<unsigned int>& indices, const ShadingConstants& constants)
 {
     VertexShader vs;
 
-    for (int i = 0; i < vertices.size(); i++) 
+    for (int i = 0; i < vertices.size(); i++)
     {
         VertexOut vo = vs.ShaderProc(vertices[i], constants);
+
         VertexOutBuffer.push_back(vo);
     }
 
 
     int size = indices.size();
-    for (int i = 0; i < size / 3; i++) 
+    for (int i = 0; i < size / 3; i++)
     {
         int index = i * 3;
         Rasterize(VertexOutBuffer[indices[index]], VertexOutBuffer[indices[index + 1]], VertexOutBuffer[indices[index + 2]], constants);
@@ -216,7 +181,7 @@ void Pipeline::Present()
         GL_TEXTURE_2D, texture1, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);  
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBlitFramebuffer(0, 0, data->width, data->height, 0, 0, data->width, data->height,
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
