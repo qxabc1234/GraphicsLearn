@@ -48,6 +48,8 @@ public:
 
 	Vector4 operator*(float a) const;
 	Vector4 operator/(float a) const;
+	Vector4 operator-(float a) const;
+
 	Vector4 operator+(const Vector4& other) const;
 	float operator*(const Vector4& other) const;
 	Vector4 operator-(const Vector4& other) const;

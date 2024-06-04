@@ -20,7 +20,7 @@ Texture2D::~Texture2D()
 Vector4 Texture2D::Sample(float u, float v) const
 {
     float x = u * width;
-    float y = v * height;
+    float y = (1-v) * height;
 
     float top = int(y) + 0.5f;
     float bottom = top - 1.0f;

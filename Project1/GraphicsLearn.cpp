@@ -23,7 +23,7 @@ Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
 //light
 float intensity = 1.0f;
-Vector4 lightDir(0.0f, 0.0f, 1.0f, 0.0f);
+Vector4 lightDir(0.0f, 10.0f, 10.0f, 0.0f);
 Vector4 lightColor(1.0f, 1.0f, 1.0f, 0.0f);
 
 bool startPress = true;
@@ -85,8 +85,9 @@ int main()
     constants.viewMatrix = view;
     constants.projectionMatrix = proj;
     constants.lightColor = lightColor;
-    constants.lightDir = lightDir;
-    constants.mainTex = new Texture2D("./assets/backpack/normal.png");
+    constants.lightDir = lightDir.Normalize();
+    constants.mainTex = new Texture2D("./assets/backpack/diffuse.jpg");
+    constants.normalTex = new Texture2D("./assets/backpack/normal.png");
     constants.intensity = intensity;
 
     Pipeline pipeline;
@@ -122,6 +123,7 @@ int main()
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     delete constants.mainTex;
+    delete constants.normalTex;
     glfwTerminate();
     return 0;
 }
