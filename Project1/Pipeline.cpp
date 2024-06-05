@@ -36,7 +36,6 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                           {int(v2.ndcPos.x * a + a + 0.5), int(v2.ndcPos.y * b + b + 0.5)} };
 
 
-
     for (int i = 0; i < 3; i++) {
         if (imagePos[i][1] > Max_Y)
             Max_Y = imagePos[i][1];
@@ -84,7 +83,7 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
             if (ae[k].ymax == i)
                 ae[k].isValid = false;
         }
-            
+
 
         for (int k = 0; k < 3; k++)
         {
@@ -98,26 +97,29 @@ void Pipeline::Rasterize(const VertexOut& v0, const VertexOut& v1, const VertexO
                         break;
                     }
                 }
-            }      
+            }
         }
 
         if (ae[0].isValid && ae[1].isValid)
         {
-            for (int j = (int)min(ae[0].x, ae[1].x); j <= max(ae[0].x, ae[1].x); j++)
+            for (int j = min(ae[0].x, ae[1].x); j <= max(ae[0].x, ae[1].x) + 1; j++)
             {
                 float px = 2.0f * (j + 0.5f) / data->width - 1;
                 float py = 2.0f * (i + 0.5f) / data->height - 1;
                 // p 0 1
-                float s1 = abs((px - v1.ndcPos.x) * (v0.ndcPos.y - v1.ndcPos.y) - (v0.ndcPos.x - v1.ndcPos.x) * (py - v1.ndcPos.y));
+                float s1 = ((px - v1.ndcPos.x) * (v0.ndcPos.y - v1.ndcPos.y) - (v0.ndcPos.x - v1.ndcPos.x) * (py - v1.ndcPos.y));
                 // p 1 2
-                float s2 = abs((px - v2.ndcPos.x) * (v1.ndcPos.y - v2.ndcPos.y) - (v1.ndcPos.x - v2.ndcPos.x) * (py - v2.ndcPos.y));
+                float s2 = ((px - v2.ndcPos.x) * (v1.ndcPos.y - v2.ndcPos.y) - (v1.ndcPos.x - v2.ndcPos.x) * (py - v2.ndcPos.y));
                 // p 0 2
-                float s3 = abs((px - v2.ndcPos.x) * (v0.ndcPos.y - v2.ndcPos.y) - (v0.ndcPos.x - v2.ndcPos.x) * (py - v2.ndcPos.y));
-                float total = s1 + s2 + s3;
+               // float s3 = 
+                float total = ((v2.ndcPos.x - v1.ndcPos.x) * (v0.ndcPos.y - v1.ndcPos.y) - (v0.ndcPos.x - v1.ndcPos.x) * (v2.ndcPos.y - v1.ndcPos.y));
                 if (total < 1e-6) return;
                 float r1 = s1 / total;
                 float r2 = s2 / total;
-                float r3 = s3 / total;
+                float r3 = 1.0f - r1 - r2;
+                r1 = clamp(r1, 0.0f, 1.0f);
+                r2 = clamp(r2, 0.0f, 1.0f);
+                r3 = clamp(r3, 0.0f, 1.0f);
                 float inversedW = (r1 / v2.clipPos.w + r2 / v0.clipPos.w + r3 / v1.clipPos.w);
                 VertexOut fragmentIn;
                 for (int k = 0; k < voLen; k++)
