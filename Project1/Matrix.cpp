@@ -76,6 +76,17 @@ Matrix Matrix::Persp(float fov, float n, float f, float ratio)
 	return persp;
 }
 
+Matrix Matrix::transpose(Matrix mat)
+{
+
+	Matrix  result({mat.m[0][0],mat.m[1][0],mat.m[2][0], 0.0f},
+		{ mat.m[0][1],mat.m[1][1],mat.m[2][1], 0.0f },
+		{ mat.m[0][2],mat.m[1][2],mat.m[2][2], 0.0f },
+		{ mat.m[0][3],mat.m[1][3],mat.m[2][3], 0.0f });
+
+	return result;
+}
+
 
 Matrix Matrix::operator*(const Matrix& other) const
 {

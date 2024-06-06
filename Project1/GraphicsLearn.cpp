@@ -17,13 +17,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 void processInput(GLFWwindow* window);
 
 //camera
-Vector4 cameraPos(0.0f, 0.0f, 7.0f, 1.0f);
-Vector4 cameraTarget(0.0f, 0.0f, 0.0f, 1.0f);
+Vector4 cameraPos(0.0f, 1.0f, 6.0f, 1.0f);
+Vector4 cameraFront(0.0f, 0.0f, -1.0f, 1.0f);
 Vector4 up(0.0f, 1.0f, 0.0f, 0.0f);
 
 //light
 float intensity = 1.0f;
-Vector4 lightDir(0.0f, 10.0f, 10.0f, 0.0f);
+Vector4 lightPos(0.0f, 1.0f, 6.0f, 1.0f);
 Vector4 lightColor(1.0f, 1.0f, 1.0f, 0.0f);
 
 bool startPress = true;
@@ -77,7 +77,7 @@ int main()
     
     Model ourModel("./assets/backpack/backpack.obj");
 
-    Matrix view = Matrix::View(cameraPos, cameraTarget, up);
+    Matrix view = Matrix::View(cameraPos, cameraPos+cameraFront, up);
     Matrix proj = Matrix::Persp(fov, 0.1f, 100.0f, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 
     ShadingConstants constants;
@@ -85,7 +85,7 @@ int main()
     constants.viewMatrix = view;
     constants.projectionMatrix = proj;
     constants.lightColor = lightColor;
-    constants.lightDir = lightDir.Normalize();
+    constants.lightPos = lightPos;
     constants.mainTex = new Texture2D("./assets/backpack/diffuse.jpg");
     constants.normalTex = new Texture2D("./assets/backpack/normal.png");
     constants.intensity = intensity;
@@ -102,7 +102,7 @@ int main()
 
         //render
         pipeline.Clear();
-        Matrix model = Matrix::Rotate(roll, 1.0f, 0.0f, 0.0f) * Matrix::Rotate(pitch, 0.0f, 1.0f, 0.0f);
+        Matrix model = Matrix::Rotate(roll, 1.0f, 0.0f, 0.0f) * Matrix::Rotate(pitch, 0.0f, 1.0f, 0.0f) ;
         constants.modelMatrix = model;
         //
         for (int i = 0; i < ourModel.meshes.size(); i++)

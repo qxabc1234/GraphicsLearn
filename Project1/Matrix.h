@@ -35,6 +35,7 @@ public:
 	static Matrix View(Vector4 pos, Vector4 target, Vector4 up);
 	static Matrix Ortho(float l, float r, float t, float b, float n, float f);
 	static Matrix Persp(float fov, float n, float f, float ratio);
+	static Matrix transpose(Matrix mat);
 
 };
 

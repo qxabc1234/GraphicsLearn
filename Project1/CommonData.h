@@ -33,7 +33,7 @@ struct ShadingConstants
 	Matrix viewMatrix;
 	Matrix projectionMatrix;
 	float intensity;
-	Vector4 lightDir;
+	Vector4 lightPos;
 	Vector4 lightColor;
 	Vector4 cameraPos;
 	Texture2D* mainTex;
