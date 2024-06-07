@@ -16,7 +16,7 @@ struct VertexOut
 			Vector4 worldNormal;
 			Vector4 uv;
 			Vector4 tangent;
-			Vector4 bitangentnt;
+			Vector4 bitangent;
 		};
 		Vector4 data[7];
 		
@@ -38,6 +38,7 @@ struct ShadingConstants
 	Vector4 cameraPos;
 	Texture2D* mainTex;
 	Texture2D* normalTex;
+	Texture2D* specularTex;
 };
 
 struct PipelineData

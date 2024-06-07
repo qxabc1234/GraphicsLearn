@@ -88,6 +88,7 @@ int main()
     constants.lightPos = lightPos;
     constants.mainTex = new Texture2D("./assets/backpack/diffuse.jpg");
     constants.normalTex = new Texture2D("./assets/backpack/normal.png");
+    constants.specularTex = new Texture2D("./assets/backpack/specular.jpg");
     constants.intensity = intensity;
 
     Pipeline pipeline;
@@ -124,6 +125,7 @@ int main()
     // ------------------------------------------------------------------
     delete constants.mainTex;
     delete constants.normalTex;
+    delete constants.specularTex;
     glfwTerminate();
     return 0;
 }

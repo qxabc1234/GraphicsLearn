@@ -11,7 +11,7 @@ VertexOut VertexShader::ShaderProc(Vertex v, const ShadingConstants& constants)
     vo.uv = Vector4(v.TexCoords);
     vo.ndcPos = vo.clipPos / vo.clipPos.w;
     vo.tangent = (constants.modelMatrix * Vector4(v.Tangent, 0)).Normalize();
-    vo.bitangentnt = (constants.modelMatrix * Vector4(v.Bitangent)).Normalize();
+    vo.bitangent = (constants.modelMatrix * Vector4(v.Bitangent, 0)).Normalize();
   
     return vo;
 }
